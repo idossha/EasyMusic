@@ -73,7 +73,6 @@
         "/site-packages/"
       ],
       "strictVerify": false,
-      "notarize": false,
       "target": [
         {
           "target": "dmg",
