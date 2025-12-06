@@ -10,6 +10,7 @@
     "dev": "electron . --dev",
     "build-spotdl": "python3 scripts/build-spotdl.py",
     "build": "npm run build-spotdl && electron-builder",
+    "build:verbose": "npm run build-spotdl && DEBUG=electron-builder electron-builder",
     "build-electron": "electron-builder",
     "clean": "rm -rf dist build downloads spotdl_env node_modules",
     "clean-downloads": "rm -rf downloads/*",

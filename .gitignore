@@ -39,6 +39,9 @@ yarn-error.log*
 .env.local
 .env.*.local
 
+# Build secrets (Apple notarization credentials)
+build-secrets.sh
+
 # Electron build artifacts
 *.dmg
 *.exe
