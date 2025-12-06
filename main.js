@@ -517,6 +517,13 @@ async function downloadMusic(spotifyUrl, outputFolder = null) {
         if (trackCount !== null) {
           currentTrackCount = trackCount;
           sendProgress(`Detected ${currentTrackCount} tracks.\n`);
+
+          // Provide helpful message for large playlists
+          if (trackCount > CONSTANTS.RATE_LIMIT.BATCH_SIZE) {
+            const estimatedMinutes = Math.ceil((trackCount * 3) / 60); // Rough estimate: 3 seconds per song
+            sendProgress(`Large playlist detected. This may take approximately ${estimatedMinutes} minutes.\n`);
+            sendProgress(`Processing songs sequentially to avoid API throttling.\n\n`);
+          }
           continue;
         }
 
@@ -524,14 +531,16 @@ async function downloadMusic(spotifyUrl, outputFolder = null) {
         const downloadProgress = parseDownloadProgress(line);
         if (downloadProgress) {
           currentTrackName = downloadProgress.trackName;
-          sendProgress(`${CONSTANTS.LOG_DOWNLOADING} ${currentTrackName}...\n`);
+          const progress = currentTrackCount > 0 ? `(${downloadedTracks + 1}/${currentTrackCount})` : '';
+          sendProgress(`${CONSTANTS.LOG_DOWNLOADING} ${progress} ${currentTrackName}...\n`);
         }
 
         // Detect completed download
         const completedTrack = parseDownloadComplete(line);
         if (completedTrack) {
           downloadedTracks++;
-          sendProgress(`${CONSTANTS.LOG_FINISHED} ${completedTrack}\n`);
+          const progress = currentTrackCount > 0 ? `(${downloadedTracks}/${currentTrackCount})` : '';
+          sendProgress(`${CONSTANTS.LOG_FINISHED} ${progress} ${completedTrack}\n`);
           currentTrackName = null;
         }
       }

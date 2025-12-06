@@ -9,8 +9,15 @@
 const CONSTANTS = {
   // Timeout values (in milliseconds)
   SPOTDL_CHECK_TIMEOUT: 5000,
-  DOWNLOAD_TIMEOUT: 10 * 60 * 1000, // 10 minutes
+  DOWNLOAD_TIMEOUT: 30 * 60 * 1000, // 30 minutes (increased for large playlists)
   GRACEFUL_KILL_TIMEOUT: 5000,
+
+  // Rate limiting configuration
+  RATE_LIMIT: {
+    BATCH_SIZE: 50, // Process songs in batches of 50
+    DELAY_BETWEEN_BATCHES: 10000, // 10 second delay between batches (in milliseconds)
+    DELAY_BETWEEN_SONGS: 2000 // 2 second delay between individual songs (in milliseconds)
+  },
 
   // Spotdl configuration
   SPOTDL_ARGS: {
