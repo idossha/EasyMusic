@@ -31,12 +31,19 @@
       "**/*",
       "!dist/**/*",
       "!downloads/**/*",
-      "!spotdl_env/**/*",
       "!node_modules/**/*",
       "!*.md",
       "!.gitignore",
       "!.git/**/*",
-      "!.DS_Store"
+      "!.DS_Store",
+      "spotdl_env/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "spotdl_env",
+        "to": "spotdl_env",
+        "filter": ["**/*"]
+      }
     ],
     "mac": {
       "category": "public.app-category.music",

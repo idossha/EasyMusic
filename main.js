@@ -61,20 +61,34 @@ function resetDownloadTracking() {
 }
 
 /**
+ * Gets the base path for the application (handles both development and packaged app)
+ * @returns {string} The base path where resources are located
+ */
+function getBasePath() {
+  // In packaged app, extraResources are in process.resourcesPath
+  // In development, they're in __dirname
+  if (app.isPackaged) {
+    return process.resourcesPath;
+  }
+  return __dirname;
+}
+
+/**
  * Gets the paths for the spotdl virtual environment
  * @returns {Object} Object containing venvPython and wrapperScript paths
  */
 function getSpotdlPaths() {
   const fsSync = require('fs');
-  const venvDir = path.join(__dirname, CONSTANTS.SPOTDL_ENV_DIR, 'bin');
-  
+  const basePath = getBasePath();
+  const venvDir = path.join(basePath, CONSTANTS.SPOTDL_ENV_DIR, 'bin');
+
   // Try python3 first (common on macOS/Linux), then python (Windows)
   let venvPython = path.join(venvDir, 'python3');
   if (!fsSync.existsSync(venvPython)) {
     venvPython = path.join(venvDir, 'python');
   }
-  
-  const wrapperScript = path.join(__dirname, CONSTANTS.SPOTDL_ENV_DIR, 'spotdl_wrapper.py');
+
+  const wrapperScript = path.join(basePath, CONSTANTS.SPOTDL_ENV_DIR, 'spotdl_wrapper.py');
   return { venvPython, wrapperScript };
 }
 
@@ -552,7 +566,8 @@ async function downloadMusic(spotifyUrl, outputFolder = null) {
  */
 function getYtdlpPaths() {
   const fsSync = require('fs');
-  const venvDir = path.join(__dirname, CONSTANTS.SPOTDL_ENV_DIR, 'bin');
+  const basePath = getBasePath();
+  const venvDir = path.join(basePath, CONSTANTS.SPOTDL_ENV_DIR, 'bin');
 
   // Check if yt-dlp is in the virtual environment
   let ytdlpPath = path.join(venvDir, 'yt-dlp');
