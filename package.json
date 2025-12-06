@@ -54,6 +54,12 @@
       "gatekeeperAssess": false,
       "entitlements": "build/entitlements.mac.plist",
       "entitlementsInherit": "build/entitlements.mac.plist",
+      "signIgnore": [
+        "**/*.py",
+        "**/*.pyc",
+        "**/*.pyo",
+        "**/__pycache__/**"
+      ],
       "target": [
         {
           "target": "dmg",
