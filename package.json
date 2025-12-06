@@ -62,13 +62,15 @@
       "entitlements": "build/entitlements.mac.plist",
       "entitlementsInherit": "build/entitlements.mac.plist",
       "signIgnore": [
-        "Contents/Resources/spotdl_env/**/*",
-        "spotdl_env/**/*",
-        "**/*.py",
-        "**/*.pyc",
-        "**/*.pyo",
-        "**/*.mo",
-        "**/__pycache__/**/*"
+        "Contents/Resources/spotdl_env",
+        "spotdl_env",
+        "\\.py$",
+        "\\.pyc$",
+        "\\.pyo$",
+        "\\.mo$",
+        "\\.so$",
+        "/__pycache__/",
+        "/site-packages/"
       ],
       "strictVerify": false,
       "notarize": false,
