@@ -5,80 +5,136 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EasyMusic - Spotify Downloader</title>
     <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
+    <!-- Animated background particles -->
+    <div class="particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
     <div class="container">
         <header class="header">
-            <h1>🎵 EasyMusic</h1>
-            <p>Download music from Spotify with one click</p>
+            <div class="logo">
+                <i class="fas fa-music"></i>
+                <h1>EasyMusic</h1>
+            </div>
+            <p class="subtitle">Download music from Spotify with one click</p>
         </header>
 
         <main class="main">
-            <div class="downloader-status" id="downloaderStatus">
-                <div class="status-indicator" id="statusIndicator"></div>
-                <span id="statusText">Checking downloader...</span>
+            <div class="status-card" id="downloaderStatus">
+                <div class="status-icon">
+                    <i class="fas fa-cog fa-spin"></i>
+                </div>
+                <div class="status-content">
+                    <div class="status-indicator" id="statusIndicator"></div>
+                    <span id="statusText">Checking downloader...</span>
+                </div>
             </div>
 
             <form class="download-form" id="downloadForm">
                 <div class="input-group">
-                    <label for="spotifyUrl">Spotify URL</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-link input-icon"></i>
                     <input
                         type="url"
                         id="spotifyUrl"
-                        placeholder="https://open.spotify.com/track/... or spotify:track:..."
+                        placeholder="Paste a Spotify track, album, or playlist URL"
                         required
                     >
-                    <small class="help-text">
-                        Paste a Spotify track, album, or playlist URL
-                    </small>
+                    <label class="input-label">Spotify URL</label>
+                </div>
                 </div>
 
                 <div class="input-group">
-                    <label for="outputFolder">Output Folder</label>
-                    <div class="folder-input">
+                    <div class="input-wrapper">
+                        <i class="fas fa-folder input-icon"></i>
                         <input
                             type="text"
                             id="outputFolder"
                             placeholder="Select output folder..."
                             readonly
                         >
-                        <button type="button" id="selectFolderBtn" class="folder-btn">
+                        <label class="input-label">Output Folder</label>
+                        <button type="button" id="selectFolderBtn" class="browse-btn">
+                            <i class="fas fa-folder-open"></i>
                             Browse
                         </button>
                     </div>
                 </div>
 
                 <button type="submit" id="downloadBtn" class="download-btn" disabled>
-                    <span class="btn-text">Download Music</span>
-                    <div class="spinner" id="spinner" style="display: none;"></div>
+                    <div class="btn-content">
+                        <i class="fas fa-download"></i>
+                        <span class="btn-text">Download Music</span>
+                        <div class="spinner" id="spinner" style="display: none;"></div>
+                    </div>
+                    <div class="btn-glow"></div>
                 </button>
             </form>
 
             <div class="progress-section" id="progressSection" style="display: none;">
-                <h3>Download Progress</h3>
+                <div class="progress-header">
+                    <i class="fas fa-chart-line"></i>
+                    <h3>Download Progress</h3>
+                </div>
                 <div class="progress-container">
                     <div class="progress-bar" id="progressBar">
-                        <div class="progress-fill" id="progressFill"></div>
+                        <div class="progress-fill" id="progressFill">
+                            <div class="progress-shine"></div>
+                        </div>
                     </div>
-                    <div class="progress-controls">
-                        <span class="progress-text" id="progressText">Preparing download...</span>
+                    <div class="progress-info">
+                        <div class="progress-text" id="progressText">
+                            <i class="fas fa-play-circle"></i>
+                            Preparing download...
+                        </div>
                         <button id="stopBtn" class="stop-btn" style="display: none;">
+                            <i class="fas fa-stop-circle"></i>
                             <span class="stop-text">Stop</span>
                         </button>
                     </div>
                 </div>
-                <div class="log-output" id="logOutput"></div>
+                <div class="log-container">
+                    <div class="log-header">
+                        <i class="fas fa-terminal"></i>
+                        <span>Console Output</span>
+                    </div>
+                    <div class="log-output" id="logOutput"></div>
+                </div>
             </div>
 
             <div class="results-section" id="resultsSection" style="display: none;">
-                <h3>Download Complete!</h3>
+                <div class="results-header">
+                    <i class="fas fa-check-circle"></i>
+                    <h3>Download Complete!</h3>
+                </div>
                 <div class="results-list" id="resultsList"></div>
-                <button id="downloadAnotherBtn" class="secondary-btn">Download Another</button>
+                <button id="downloadAnotherBtn" class="success-btn">
+                    <i class="fas fa-plus"></i>
+                    Download Another
+                </button>
             </div>
         </main>
 
         <footer class="footer">
-            <p>🎵 EasyMusic - Spotify Downloader</p>
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <i class="fas fa-music"></i>
+                    <span>EasyMusic</span>
+                </div>
+                <div class="footer-links">
+                    <span>Spotify Downloader</span>
+                    <span>•</span>
+                    <span>v1.0.0</span>
+                </div>
+            </div>
         </footer>
     </div>
 
