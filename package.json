@@ -55,10 +55,10 @@
       "entitlements": "build/entitlements.mac.plist",
       "entitlementsInherit": "build/entitlements.mac.plist",
       "signIgnore": [
-        "**/*.py",
-        "**/*.pyc",
-        "**/*.pyo",
-        "**/__pycache__/**"
+        "\\.py$",
+        "\\.pyc$",
+        "\\.pyo$",
+        "__pycache__"
       ],
       "target": [
         {
