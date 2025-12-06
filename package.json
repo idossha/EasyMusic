@@ -78,7 +78,6 @@
         }
       ]
     },
-    "afterSign": "build/notarize.js",
     "win": {
       "icon": "assets/icon.png"
     },
