@@ -1,0 +1,58 @@
+{
+  "name": "easymusic",
+  "version": "1.0.0",
+  "description": "Easy music downloader with Spotifydl and Electron UI",
+  "main": "main.js",
+  "author": "EasyMusic Team",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "build-spotdl": "python3 scripts/build-spotdl.py",
+    "build": "npm run build-spotdl && electron-builder",
+    "build-electron": "electron-builder",
+    "clean": "rm -rf dist build downloads spotdl_env node_modules",
+    "clean-downloads": "rm -rf downloads/*",
+    "clean-spotdl": "rm -rf spotdl_env"
+  },
+  "dependencies": {
+    "electron": "^28.0.0"
+  },
+  "devDependencies": {
+    "electron-builder": "^24.6.4"
+  },
+  "build": {
+    "appId": "com.easymusic.app",
+    "productName": "EasyMusic",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "**/*",
+      "!dist/**/*",
+      "!build/**/*",
+      "!downloads/**/*",
+      "!spotdl_env/**/*",
+      "!node_modules/**/*",
+      "!*.md",
+      "!.gitignore",
+      "!.git/**/*",
+      "!.DS_Store"
+    ],
+    "mac": {
+      "category": "public.app-category.music",
+      "icon": "assets/icon.png"
+    },
+    "win": {
+      "icon": "assets/icon.png"
+    },
+    "linux": {
+      "category": "Audio",
+      "icon": "assets/icon.png"
+    }
+  },
+  "engines": {
+    "node": ">=14.0.0",
+    "npm": ">=6.0.0"
+  }
+}
