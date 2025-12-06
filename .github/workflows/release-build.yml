@@ -95,7 +95,7 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-        run: npx electron-builder --mac --${{ matrix.arch }}
+        run: npx electron-builder --mac --${{ matrix.arch }} --publish never
 
       - name: Verify Code Signature and Notarization
         run: |
@@ -150,7 +150,7 @@ jobs:
       - name: Build Electron app
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx electron-builder --win --x64
+        run: npx electron-builder --win --x64 --publish never
 
       - name: Upload Windows artifacts
         uses: actions/upload-artifact@v4
@@ -190,7 +190,7 @@ jobs:
       - name: Build Electron app
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx electron-builder --linux --x64
+        run: npx electron-builder --linux --x64 --publish never
 
       - name: Upload Linux artifacts
         uses: actions/upload-artifact@v4
