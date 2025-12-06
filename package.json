@@ -1,6 +1,6 @@
 {
   "name": "easymusic",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Easy music downloader with Spotifydl and Electron UI",
   "main": "main.js",
   "author": "EasyMusic Team",
