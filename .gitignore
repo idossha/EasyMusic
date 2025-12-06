@@ -3,7 +3,9 @@ node_modules/
 
 # Build outputs
 dist/
-build/
+build/*
+!build/entitlements.mac.plist
+!build/notarize.js
 out/
 
 # FFmpeg binaries (large files - download separately)
