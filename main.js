@@ -74,6 +74,37 @@ function getBasePath() {
 }
 
 /**
+ * Gets the path to the bundled FFmpeg binary
+ * @returns {string} The path to ffmpeg
+ */
+function getFfmpegPath() {
+  const basePath = getBasePath();
+  const platform = process.platform;
+  const arch = process.arch;
+
+  // Determine the correct binary directory based on platform and architecture
+  let binaryDir;
+  if (platform === 'darwin') {
+    binaryDir = arch === 'arm64' ? 'darwin-arm64' : 'darwin-x64';
+  } else if (platform === 'win32') {
+    binaryDir = arch === 'x64' ? 'win32-x64' : 'win32-ia32';
+  } else {
+    binaryDir = arch === 'x64' ? 'linux-x64' : 'linux-arm64';
+  }
+
+  const ffmpegPath = path.join(basePath, 'binaries', binaryDir, 'ffmpeg');
+  const fsSync = require('fs');
+
+  // Check if bundled FFmpeg exists, otherwise try system FFmpeg
+  if (fsSync.existsSync(ffmpegPath) || fsSync.existsSync(ffmpegPath + '.exe')) {
+    return ffmpegPath;
+  }
+
+  // Fallback to system FFmpeg
+  return 'ffmpeg';
+}
+
+/**
  * Gets the paths for the spotdl virtual environment
  * @returns {Object} Object containing venvPython and wrapperScript paths
  */
@@ -420,6 +451,7 @@ async function downloadMusic(spotifyUrl, outputFolder = null) {
     const { venvPython, wrapperScript } = getSpotdlPaths();
 
     // Prepare spotdl command arguments
+    const ffmpegPath = getFfmpegPath();
     const args = [
       CONSTANTS.SPOTDL_ARGS.COMMAND,
       spotifyUrl,
@@ -427,7 +459,8 @@ async function downloadMusic(spotifyUrl, outputFolder = null) {
       '--format', CONSTANTS.SPOTDL_ARGS.FORMAT,
       '--bitrate', CONSTANTS.SPOTDL_ARGS.BITRATE,
       '--threads', CONSTANTS.SPOTDL_ARGS.THREADS,
-      '--max-retries', CONSTANTS.SPOTDL_ARGS.MAX_RETRIES
+      '--max-retries', CONSTANTS.SPOTDL_ARGS.MAX_RETRIES,
+      '--ffmpeg', ffmpegPath
     ];
 
     // Send progress updates safely
@@ -654,6 +687,7 @@ async function downloadYoutube(youtubeUrl, outputFolder = null) {
   return new Promise((resolve, reject) => {
     const { ytdlpPath } = getYtdlpPaths();
     const outputTemplate = path.join(downloadsDir, CONSTANTS.YTDLP_ARGS.OUTPUT_TEMPLATE);
+    const ffmpegPath = getFfmpegPath();
 
     // Prepare yt-dlp command arguments
     const args = [
@@ -665,7 +699,9 @@ async function downloadYoutube(youtubeUrl, outputFolder = null) {
       '--no-playlist',
       '--retries', CONSTANTS.YTDLP_ARGS.MAX_RETRIES,
       '--progress',
-      '--newline'
+      '--newline',
+      '--ffmpeg-location', ffmpegPath,
+      '--extractor-args', 'youtube:player_client=default'
     ];
 
     console.log('Starting yt-dlp with args:', args.join(' '));

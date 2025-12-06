@@ -9,10 +9,11 @@
     "start": "electron .",
     "dev": "electron . --dev",
     "build-spotdl": "python3 scripts/build-spotdl.py",
-    "build": "npm run build-spotdl && electron-builder",
-    "build:verbose": "npm run build-spotdl && DEBUG=electron-builder electron-builder",
+    "download-ffmpeg": "bash scripts/download-ffmpeg.sh",
+    "build": "npm run build-spotdl && npm run download-ffmpeg && electron-builder",
+    "build:verbose": "npm run build-spotdl && npm run download-ffmpeg && DEBUG=electron-builder electron-builder",
     "build-electron": "electron-builder",
-    "clean": "rm -rf dist build downloads spotdl_env node_modules",
+    "clean": "rm -rf dist build downloads spotdl_env node_modules binaries",
     "clean-downloads": "rm -rf downloads/*",
     "clean-spotdl": "rm -rf spotdl_env"
   },
@@ -37,12 +38,18 @@
       "!.gitignore",
       "!.git/**/*",
       "!.DS_Store",
-      "spotdl_env/**/*"
+      "spotdl_env/**/*",
+      "binaries/**/*"
     ],
     "extraResources": [
       {
         "from": "spotdl_env",
         "to": "spotdl_env",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "binaries",
+        "to": "binaries",
         "filter": ["**/*"]
       }
     ],
@@ -60,6 +67,7 @@
         "\\.pyo$",
         "__pycache__"
       ],
+      "strictVerify": false,
       "target": [
         {
           "target": "dmg",

@@ -6,6 +6,9 @@ dist/
 build/
 out/
 
+# FFmpeg binaries (large files - download separately)
+binaries/
+
 # Python
 spotdl_env/
 __pycache__/

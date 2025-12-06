@@ -27,6 +27,11 @@ npm run dev
 npm run build
 ```
 
+The build process automatically downloads FFmpeg binaries for bundling. If you need to download them separately:
+```bash
+npm run download-ffmpeg
+```
+
 ## Usage
 
 1. Paste a Spotify URL (track, album, or playlist)
@@ -60,6 +65,7 @@ npm run build
 - **"Downloader not available"**: Run `npm run build-spotdl`
 - **Download fails**: Check URL, internet, and disk space
 - **Build issues**: Ensure Python venv is available
+- **FFmpeg errors**: FFmpeg is automatically bundled with the app. For development, run `npm run download-ffmpeg`
 
 ## Disclaimer
 
