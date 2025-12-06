@@ -42,6 +42,7 @@ let downloadTimeout = null;
 let currentTrackCount = 0;
 let downloadedTracks = 0;
 let currentTrackName = null;
+let isDownloadStopped = false;
 
 /**
  * Resets all download tracking variables to their initial state
@@ -50,7 +51,8 @@ function resetDownloadTracking() {
   currentTrackCount = 0;
   downloadedTracks = 0;
   currentTrackName = null;
-  
+  isDownloadStopped = false;
+
   // Clear any active timeout
   if (downloadTimeout) {
     clearTimeout(downloadTimeout);
@@ -147,7 +149,9 @@ async function checkSpotifydl() {
  */
 function createWindow() {
   console.log('Main: Creating window...');
-  console.log('Main: Preload script path:', path.join(__dirname, 'preload.js'));
+  const preloadPath = path.join(__dirname, 'preload.js');
+  console.log('Main: Preload script path:', preloadPath);
+  console.log('Main: Preload script exists:', require('fs').existsSync(preloadPath));
 
   // Create the browser window
   mainWindow = new BrowserWindow({
@@ -201,7 +205,7 @@ app.on('window-all-closed', () => {
   }
 });
 
-// IPC handlers for Spotifydl operations
+// IPC handlers for download operations
 ipcMain.handle('download-music', async (event, spotifyUrl, outputFolder) => {
   try {
     return await downloadMusic(spotifyUrl, outputFolder);
@@ -211,9 +215,27 @@ ipcMain.handle('download-music', async (event, spotifyUrl, outputFolder) => {
   }
 });
 
+ipcMain.handle('download-youtube', async (event, youtubeUrl, outputFolder) => {
+  try {
+    return await downloadYoutube(youtubeUrl, outputFolder);
+  } catch (error) {
+    console.error('YouTube download error:', error);
+    throw error;
+  }
+});
+
 ipcMain.handle('check-spotifydl', async () => {
   try {
     const available = await checkSpotifydl();
+    return { available };
+  } catch (error) {
+    return { available: false, error: error.message };
+  }
+});
+
+ipcMain.handle('check-ytdlp', async () => {
+  try {
+    const available = await checkYtdlp();
     return { available };
   } catch (error) {
     return { available: false, error: error.message };
@@ -243,7 +265,9 @@ ipcMain.handle('stop-download', async () => {
 
     const processToKill = activeProcess;
     activeProcess = null;
-    resetDownloadTracking();
+
+    // Set flag to indicate intentional stop
+    isDownloadStopped = true;
 
     // Try graceful termination first
     processToKill.kill('SIGTERM');
@@ -258,7 +282,7 @@ ipcMain.handle('stop-download', async () => {
     if (mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.webContents.send(CONSTANTS.IPC_EVENTS.DOWNLOAD_PROGRESS, '\nDownload stopped by user.\n');
     }
-    
+
     return { success: true };
   } catch (error) {
     console.error('Failed to stop download:', error);
@@ -475,6 +499,17 @@ async function downloadMusic(spotifyUrl, outputFolder = null) {
 
     // Handle process completion
     spotdlProcess.on('close', async (code) => {
+      // Check if download was intentionally stopped
+      if (isDownloadStopped) {
+        settlePromise(resolve, {
+          success: true,
+          stopped: true,
+          files: [],
+          output: outputBuffer
+        });
+        return;
+      }
+
       if (code === 0) {
         // Success - get list of downloaded files
         try {
@@ -505,6 +540,240 @@ async function downloadMusic(spotifyUrl, outputFolder = null) {
     downloadTimeout = setTimeout(() => {
       if (!isSettled && spotdlProcess && !spotdlProcess.killed) {
         spotdlProcess.kill('SIGTERM');
+        settlePromise(reject, new Error(`Download timed out after ${CONSTANTS.DOWNLOAD_TIMEOUT / 60000} minutes`));
+      }
+    }, CONSTANTS.DOWNLOAD_TIMEOUT);
+  });
+}
+
+/**
+ * Gets the paths for yt-dlp in the virtual environment
+ * @returns {Object} Object containing ytdlpPath
+ */
+function getYtdlpPaths() {
+  const fsSync = require('fs');
+  const venvDir = path.join(__dirname, CONSTANTS.SPOTDL_ENV_DIR, 'bin');
+
+  // Check if yt-dlp is in the virtual environment
+  let ytdlpPath = path.join(venvDir, 'yt-dlp');
+  if (!fsSync.existsSync(ytdlpPath)) {
+    // Try system-wide yt-dlp
+    ytdlpPath = 'yt-dlp';
+  }
+
+  return { ytdlpPath };
+}
+
+/**
+ * Checks if yt-dlp is available (in venv or system-wide)
+ * @returns {Promise<boolean>} True if yt-dlp is available
+ */
+async function checkYtdlp() {
+  try {
+    const { ytdlpPath } = getYtdlpPaths();
+
+    return new Promise((resolve) => {
+      const ytProcess = spawn(ytdlpPath, ['--version'], {
+        stdio: 'pipe',
+        timeout: CONSTANTS.SPOTDL_CHECK_TIMEOUT
+      });
+
+      let hasOutput = false;
+
+      ytProcess.stdout.on('data', () => {
+        hasOutput = true;
+      });
+
+      ytProcess.on('close', (code) => {
+        resolve(code === 0 && hasOutput);
+      });
+
+      ytProcess.on('error', () => {
+        resolve(false);
+      });
+    });
+  } catch (error) {
+    console.error('Error checking yt-dlp:', error);
+    return false;
+  }
+}
+
+/**
+ * Validates if the provided URL is a valid YouTube URL
+ * @param {string} url - The URL to validate
+ * @returns {boolean} True if the URL is valid
+ */
+function isValidYoutubeUrl(url) {
+  if (!url || typeof url !== 'string') {
+    return false;
+  }
+
+  const trimmedUrl = url.trim();
+  return trimmedUrl.includes('youtube.com') ||
+         trimmedUrl.includes('youtu.be') ||
+         trimmedUrl.match(/youtube\.com\/watch\?v=[\w-]+/) ||
+         trimmedUrl.match(/youtu\.be\/[\w-]+/);
+}
+
+/**
+ * Downloads music from YouTube using yt-dlp
+ * @param {string} youtubeUrl - The YouTube URL to download
+ * @param {string} outputFolder - The output folder path (optional)
+ * @returns {Promise<Object>} Download result with success status and files
+ * @throws {Error} If download fails
+ */
+async function downloadYoutube(youtubeUrl, outputFolder = null) {
+  // Basic validation - ensure it's a YouTube URL
+  if (!isValidYoutubeUrl(youtubeUrl)) {
+    throw new Error('Invalid YouTube URL');
+  }
+
+  // Check if there's already an active download
+  if (activeProcess) {
+    throw new Error('A download is already in progress');
+  }
+
+  // Ensure download directory exists
+  const downloadsDir = await ensureDownloadDirectory(outputFolder);
+
+  return new Promise((resolve, reject) => {
+    const { ytdlpPath } = getYtdlpPaths();
+    const outputTemplate = path.join(downloadsDir, CONSTANTS.YTDLP_ARGS.OUTPUT_TEMPLATE);
+
+    // Prepare yt-dlp command arguments
+    const args = [
+      youtubeUrl,
+      '--extract-audio',
+      '--audio-format', CONSTANTS.YTDLP_ARGS.AUDIO_FORMAT,
+      '--audio-quality', CONSTANTS.YTDLP_ARGS.AUDIO_QUALITY,
+      '--output', outputTemplate,
+      '--no-playlist',
+      '--retries', CONSTANTS.YTDLP_ARGS.MAX_RETRIES,
+      '--progress',
+      '--newline'
+    ];
+
+    console.log('Starting yt-dlp with args:', args.join(' '));
+
+    // Start yt-dlp process
+    activeProcess = spawn(ytdlpPath, args, {
+      stdio: ['pipe', 'pipe', 'pipe'],
+      cwd: downloadsDir
+    });
+
+    let outputBuffer = '';
+    let errorBuffer = '';
+    let isSettled = false;
+
+    // Reset download tracking
+    resetDownloadTracking();
+
+    const settlePromise = (fn, ...args) => {
+      if (isSettled) return;
+      isSettled = true;
+      cleanup();
+      fn(...args);
+    };
+
+    const cleanup = () => {
+      activeProcess = null;
+      if (downloadTimeout) {
+        clearTimeout(downloadTimeout);
+        downloadTimeout = null;
+      }
+    };
+
+    // Send progress updates safely
+    const sendProgress = (message) => {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send(CONSTANTS.IPC_EVENTS.DOWNLOAD_PROGRESS, message);
+      }
+    };
+
+    // Handle stdout
+    activeProcess.stdout.on('data', (data) => {
+      const output = data.toString();
+      outputBuffer += output;
+
+      // Parse progress information
+      const lines = output.split('\n').filter(line => line.trim());
+      for (const line of lines) {
+        // Look for download progress
+        if (line.includes('[download]') && line.includes('%')) {
+          const progressMatch = line.match(/(\d+(?:\.\d+)?)%/);
+          if (progressMatch) {
+            const progress = parseFloat(progressMatch[1]);
+            currentTrackName = 'Downloading...';
+            sendProgress(`Downloading: ${progress.toFixed(1)}% complete\n`);
+          }
+        }
+
+        // Look for destination filename
+        if (line.includes('[download] Destination:')) {
+          const filenameMatch = line.match(/Destination:\s*(.+)/);
+          if (filenameMatch) {
+            currentTrackName = filenameMatch[1].trim();
+            sendProgress(`Downloading: ${currentTrackName}\n`);
+          }
+        }
+
+        // Look for completion
+        if (line.includes('[ExtractAudio]') && line.includes('has already been downloaded')) {
+          sendProgress(`✓ Already downloaded: ${currentTrackName}\n`);
+        }
+      }
+    });
+
+    // Handle stderr
+    activeProcess.stderr.on('data', (data) => {
+      const error = data.toString();
+      errorBuffer += error;
+      sendProgress(error);
+    });
+
+    // Handle process completion
+    activeProcess.on('close', async (code) => {
+      // Check if download was intentionally stopped
+      if (isDownloadStopped) {
+        settlePromise(resolve, {
+          success: true,
+          stopped: true,
+          files: [],
+          output: outputBuffer
+        });
+        return;
+      }
+
+      if (code === 0) {
+        // Success - get list of downloaded files
+        try {
+          const musicFiles = await getDownloadedFiles(downloadsDir);
+          sendProgress('\n✓ Download completed successfully!\n');
+          settlePromise(resolve, {
+            success: true,
+            files: musicFiles,
+            output: outputBuffer
+          });
+        } catch (error) {
+          console.error('Failed to get downloaded files:', error);
+          settlePromise(reject, new Error(`Download completed but failed to list files: ${error.message}`));
+        }
+      } else {
+        // Error
+        sendProgress(`\nDownload failed!\n${errorBuffer}\n`);
+        settlePromise(reject, new Error(`Download failed: ${errorBuffer || 'Unknown error'}`));
+      }
+    });
+
+    // Handle process errors
+    activeProcess.on('error', (error) => {
+      settlePromise(reject, new Error(`Failed to start YouTube download process: ${error.message}`));
+    });
+
+    // Timeout after configured duration
+    downloadTimeout = setTimeout(() => {
+      if (!isSettled && activeProcess && !activeProcess.killed) {
+        activeProcess.kill('SIGTERM');
         settlePromise(reject, new Error(`Download timed out after ${CONSTANTS.DOWNLOAD_TIMEOUT / 60000} minutes`));
       }
     }, CONSTANTS.DOWNLOAD_TIMEOUT);

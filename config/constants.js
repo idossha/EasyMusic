@@ -21,12 +21,28 @@ const CONSTANTS = {
     MAX_RETRIES: '5'
   },
 
+  // YouTube-dl configuration
+  YTDLP_ARGS: {
+    COMMAND: 'yt-dlp',
+    FORMAT: 'bestaudio/best',
+    AUDIO_FORMAT: 'mp3',
+    AUDIO_QUALITY: '192K',
+    MAX_RETRIES: '5',
+    OUTPUT_TEMPLATE: '%(title)s.%(ext)s'
+  },
+
   // File extensions for music files
   MUSIC_EXTENSIONS: ['.mp3', '.flac', '.m4a', '.wav', '.ogg'],
 
   // Directory names
   SPOTDL_ENV_DIR: 'spotdl_env',
   DOWNLOADS_DIR: 'downloads',
+
+  // Download modes
+  DOWNLOAD_MODES: {
+    SPOTIFY: 'spotify',
+    YOUTUBE: 'youtube'
+  },
 
   // Progress percentages
   PROGRESS_PREPARING: '0%',
@@ -56,8 +72,10 @@ const CONSTANTS = {
     STOP: 'Stop',
     DOWNLOAD_MUSIC: 'Download Music',
     FOLDER_PLACEHOLDER: 'Select output folder...',
-    URL_PLACEHOLDER: 'https://open.spotify.com/track/... or spotify:track:...',
-    URL_HELP: 'Paste a Spotify track, album, or playlist URL',
+    SPOTIFY_URL_PLACEHOLDER: 'Paste URL of track, artist, or playlist',
+    YOUTUBE_URL_PLACEHOLDER: 'Paste YouTube video URL',
+    SPOTIFY_URL_HELP: 'Paste a Spotify track, album, or playlist URL',
+    YOUTUBE_URL_HELP: 'Paste a YouTube video URL',
     DOWNLOAD_COMPLETE: 'Download complete!',
     DOWNLOAD_FAILED: 'Download failed',
     DOWNLOAD_STOPPED: 'Download stopped',
@@ -67,7 +85,9 @@ const CONSTANTS = {
   // Event names for IPC communication
   IPC_EVENTS: {
     DOWNLOAD_MUSIC: 'download-music',
+    DOWNLOAD_YOUTUBE: 'download-youtube',
     CHECK_SPOTIFYDL: 'check-spotifydl',
+    CHECK_YTDLP: 'check-ytdlp',
     SELECT_OUTPUT_FOLDER: 'select-output-folder',
     STOP_DOWNLOAD: 'stop-download',
     DOWNLOAD_PROGRESS: 'download-progress'

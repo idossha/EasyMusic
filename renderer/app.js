@@ -14,35 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 let progressCleanup = null;
-
-/**
- * Wait for constants to be available and then initialize
- * @returns {Promise<void>}
- */
-async function waitForConstants() {
-    const MAX_RETRIES = 50; // 5 seconds max
-    let retries = 0;
-
-    return new Promise((resolve, reject) => {
-        const checkConstants = () => {
-            const hasConstants = typeof window.CONSTANTS !== 'undefined';
-            const hasElectronAPI = typeof window.electronAPI !== 'undefined';
-
-            if (hasConstants && hasElectronAPI) {
-                resolve();
-            } else if (retries >= MAX_RETRIES) {
-                const missing = [];
-                if (!hasConstants) missing.push('CONSTANTS');
-                if (!hasElectronAPI) missing.push('electronAPI');
-                reject(new Error(`Failed to load: ${missing.join(', ')}`));
-            } else {
-                retries++;
-                setTimeout(checkConstants, 100);
-            }
-        };
-        checkConstants();
-    });
-}
+let currentMode = 'spotify'; // Default to spotify
 
 /**
  * Cached DOM elements for the application
@@ -54,7 +26,7 @@ const elements = {};
  */
 function cacheElements() {
     elements.downloadForm = document.getElementById('downloadForm');
-    elements.spotifyUrlInput = document.getElementById('spotifyUrl');
+    elements.musicUrlInput = document.getElementById('musicUrl');
     elements.outputFolderInput = document.getElementById('outputFolder');
     elements.selectFolderBtn = document.getElementById('selectFolderBtn');
     elements.downloadBtn = document.getElementById('downloadBtn');
@@ -69,6 +41,7 @@ function cacheElements() {
     elements.statusIndicator = document.getElementById('statusIndicator');
     elements.statusText = document.getElementById('statusText');
     elements.spinner = document.getElementById('spinner');
+    elements.modeToggleBtn = document.getElementById('modeToggleBtn');
 }
 
 /**
@@ -79,7 +52,54 @@ function setupEventListeners() {
     elements.downloadForm.addEventListener('submit', handleDownload);
     elements.downloadAnotherBtn.addEventListener('click', resetForm);
     elements.stopBtn.addEventListener('click', handleStopDownload);
-    elements.spotifyUrlInput.addEventListener('input', validateForm);
+    elements.musicUrlInput.addEventListener('input', validateForm);
+
+    // Mode toggle button event listener
+    elements.modeToggleBtn.addEventListener('click', handleModeToggle);
+}
+
+/**
+ * Handles mode toggle between Spotify and YouTube
+ */
+function handleModeToggle(event) {
+    // Toggle between spotify and youtube modes
+    const newMode = currentMode === window.CONSTANTS.DOWNLOAD_MODES.SPOTIFY
+        ? window.CONSTANTS.DOWNLOAD_MODES.YOUTUBE
+        : window.CONSTANTS.DOWNLOAD_MODES.SPOTIFY;
+
+    currentMode = newMode;
+
+    // Update button data attribute
+    elements.modeToggleBtn.dataset.mode = newMode;
+
+    // Update UI based on mode
+    updateUIForMode();
+
+    // Update input placeholder and validation
+    updateInputForMode();
+
+    // Clear input value when switching modes
+    elements.musicUrlInput.value = '';
+    validateForm();
+}
+
+/**
+ * Updates the input field based on the current mode
+ */
+function updateInputForMode() {
+    if (currentMode === window.CONSTANTS.DOWNLOAD_MODES.SPOTIFY) {
+        elements.musicUrlInput.placeholder = window.CONSTANTS.UI_MESSAGES.SPOTIFY_URL_PLACEHOLDER;
+    } else if (currentMode === window.CONSTANTS.DOWNLOAD_MODES.YOUTUBE) {
+        elements.musicUrlInput.placeholder = window.CONSTANTS.UI_MESSAGES.YOUTUBE_URL_PLACEHOLDER;
+    }
+}
+
+/**
+ * Updates the UI for the current mode (called after constants are loaded)
+ */
+function updateUIForMode() {
+    updateInputForMode();
+    checkDownloaderStatus();
 }
 
 /**
@@ -87,11 +107,21 @@ function setupEventListeners() {
  */
 async function initializeApp() {
     try {
+        // Check if APIs are available
+        if (!window.electronAPI || !window.CONSTANTS) {
+            throw new Error('Application not properly initialized. Missing: ' +
+                (!window.electronAPI ? 'electronAPI ' : '') +
+                (!window.CONSTANTS ? 'CONSTANTS' : ''));
+        }
+
         cacheElements();
         setupEventListeners();
 
-        // Wait for constants and electronAPI to be available
-        await waitForConstants();
+        // Set the correct initial mode
+        currentMode = window.CONSTANTS.DOWNLOAD_MODES.SPOTIFY;
+
+        // Set initial mode
+        updateInputForMode();
 
         // Check downloader status on startup
         await checkDownloaderStatus();
@@ -106,21 +136,29 @@ async function initializeApp() {
  */
 async function checkDownloaderStatus() {
     try {
-        const downloaderStatus = await window.electronAPI.checkSpotifydl();
+        let downloaderAvailable = false;
 
-        if (downloaderStatus.available) {
+        if (currentMode === window.CONSTANTS.DOWNLOAD_MODES.SPOTIFY) {
+            const spotifyStatus = await window.electronAPI.checkSpotifydl();
+            downloaderAvailable = spotifyStatus.available;
+        } else if (currentMode === window.CONSTANTS.DOWNLOAD_MODES.YOUTUBE) {
+            const youtubeStatus = await window.electronAPI.checkYtdlp();
+            downloaderAvailable = youtubeStatus.available;
+        }
+
+        if (downloaderAvailable) {
             elements.statusIndicator.className = 'status-indicator success';
-            elements.statusText.textContent = CONSTANTS.STATUS_READY;
+            elements.statusText.textContent = window.CONSTANTS.STATUS_READY;
             elements.downloadBtn.disabled = false;
         } else {
             elements.statusIndicator.className = 'status-indicator error';
-            elements.statusText.textContent = CONSTANTS.STATUS_NOT_AVAILABLE;
+            elements.statusText.textContent = window.CONSTANTS.STATUS_NOT_AVAILABLE;
             elements.downloadBtn.disabled = true;
         }
     } catch (error) {
         console.error('Failed to check downloader status:', error.message);
         elements.statusIndicator.className = 'status-indicator error';
-        elements.statusText.textContent = CONSTANTS.STATUS_FAILED;
+        elements.statusText.textContent = window.CONSTANTS.STATUS_FAILED;
         elements.downloadBtn.disabled = true;
     }
 }
@@ -157,14 +195,14 @@ async function handleStopDownload() {
         elements.stopBtn.disabled = true;
         const stopTextElement = elements.stopBtn.querySelector('.stop-text');
         if (stopTextElement) {
-            stopTextElement.textContent = CONSTANTS.UI_MESSAGES.STOPPING;
+            stopTextElement.textContent = window.CONSTANTS.UI_MESSAGES.STOPPING;
         }
 
         const result = await window.electronAPI.stopDownload();
 
         if (result.success) {
-            elements.progressText.textContent = CONSTANTS.UI_MESSAGES.DOWNLOAD_STOPPED;
-            elements.progressFill.style.width = CONSTANTS.PROGRESS_PREPARING;
+            elements.progressText.textContent = window.CONSTANTS.UI_MESSAGES.DOWNLOAD_STOPPED;
+            elements.progressFill.style.width = window.CONSTANTS.PROGRESS_PREPARING;
             setTimeout(() => {
                 resetForm();
             }, 2000);
@@ -172,7 +210,7 @@ async function handleStopDownload() {
             alert(`Failed to stop download: ${result.error}`);
             elements.stopBtn.disabled = false;
             if (stopTextElement) {
-                stopTextElement.textContent = CONSTANTS.UI_MESSAGES.STOP;
+                stopTextElement.textContent = window.CONSTANTS.UI_MESSAGES.STOP;
             }
         }
     } catch (error) {
@@ -180,7 +218,7 @@ async function handleStopDownload() {
         elements.stopBtn.disabled = false;
         const stopTextElement = elements.stopBtn.querySelector('.stop-text');
         if (stopTextElement) {
-            stopTextElement.textContent = CONSTANTS.UI_MESSAGES.STOP;
+            stopTextElement.textContent = window.CONSTANTS.UI_MESSAGES.STOP;
         }
     }
 }
@@ -189,20 +227,32 @@ async function handleStopDownload() {
  * Validates the form inputs and enables/disables the download button
  */
 function validateForm() {
-    if (!elements.spotifyUrlInput || !elements.outputFolderInput || !elements.downloadBtn) {
+    if (!elements.musicUrlInput || !elements.outputFolderInput || !elements.downloadBtn) {
         console.error('Form elements not properly initialized');
         return;
     }
 
-    const url = elements.spotifyUrlInput.value.trim();
+    const url = elements.musicUrlInput.value.trim();
     const folder = elements.outputFolderInput.value.trim();
 
-    // Basic Spotify URL validation
-    const isValidUrl = url && (
-        url.includes('spotify.com') ||
-        url.startsWith('spotify:') ||
-        url.match(/spotify:(track|album|playlist):[a-zA-Z0-9]+/)
-    );
+    let isValidUrl = false;
+
+    if (currentMode === window.CONSTANTS.DOWNLOAD_MODES.SPOTIFY) {
+        // Basic Spotify URL validation
+        isValidUrl = url && (
+            url.includes('spotify.com') ||
+            url.startsWith('spotify:') ||
+            url.match(/spotify:(track|album|playlist):[a-zA-Z0-9]+/)
+        );
+    } else if (currentMode === window.CONSTANTS.DOWNLOAD_MODES.YOUTUBE) {
+        // Basic YouTube URL validation
+        isValidUrl = url && (
+            url.includes('youtube.com') ||
+            url.includes('youtu.be') ||
+            url.match(/youtube\.com\/watch\?v=[\w-]+/) ||
+            url.match(/youtu\.be\/[\w-]+/)
+        );
+    }
 
     const isLoading = elements.downloadBtn.classList.contains('loading');
     elements.downloadBtn.disabled = !isValidUrl || !folder || isLoading;
@@ -230,12 +280,12 @@ async function startDownload(spotifyUrl, outputFolder) {
     elements.progressSection.style.display = 'block';
     elements.resultsSection.style.display = 'none';
     elements.logOutput.textContent = '';
-    elements.progressFill.style.width = CONSTANTS.PROGRESS_PREPARING;
-    elements.progressText.textContent = CONSTANTS.STATUS_PREPARING;
+    elements.progressFill.style.width = window.CONSTANTS.PROGRESS_PREPARING;
+    elements.progressText.textContent = window.CONSTANTS.STATUS_PREPARING;
 
     // Listen for progress updates
     try {
-        progressCleanup = window.electronAPI.onDownloadProgress((event, data) => {
+        progressCleanup = window.electronAPI.onDownloadProgress((data) => {
             elements.logOutput.textContent += data;
             elements.logOutput.scrollTop = elements.logOutput.scrollHeight;
 
@@ -247,19 +297,35 @@ async function startDownload(spotifyUrl, outputFolder) {
     }
 
     try {
-        const result = await window.electronAPI.downloadMusic(spotifyUrl, outputFolder);
+        let result;
+        if (currentMode === window.CONSTANTS.DOWNLOAD_MODES.SPOTIFY) {
+            result = await window.electronAPI.downloadMusic(spotifyUrl, outputFolder);
+        } else if (currentMode === window.CONSTANTS.DOWNLOAD_MODES.YOUTUBE) {
+            result = await window.electronAPI.downloadYoutube(spotifyUrl, outputFolder);
+        }
 
         if (result && result.success) {
-            // Download completed successfully - just reset form
-            setTimeout(() => {
-                resetForm();
-            }, 2000);
+            // Check if download was stopped by user
+            if (result.stopped) {
+                // Download was stopped, just reset form without showing error
+                setTimeout(() => {
+                    resetForm();
+                }, 1000);
+            } else {
+                // Download completed successfully - just reset form
+                setTimeout(() => {
+                    resetForm();
+                }, 2000);
+            }
         } else {
             throw new Error('Download failed');
         }
     } catch (error) {
         const errorMessage = error.message || 'Unknown error';
-        alert(`${CONSTANTS.UI_MESSAGES.DOWNLOAD_FAILED}: ${errorMessage}`);
+        // Don't show alert if download was stopped
+        if (!errorMessage.includes('stopped')) {
+            alert(`${window.CONSTANTS.UI_MESSAGES.DOWNLOAD_FAILED}: ${errorMessage}`);
+        }
         resetForm();
     } finally {
         setDownloadingState(false);
@@ -276,15 +342,15 @@ async function startDownload(spotifyUrl, outputFolder) {
 async function handleDownload(event) {
     event.preventDefault();
 
-    const spotifyUrl = elements.spotifyUrlInput.value.trim();
+    const musicUrl = elements.musicUrlInput.value.trim();
     const outputFolder = elements.outputFolderInput.value.trim();
 
-    if (!spotifyUrl || !outputFolder) {
-        alert('Please provide both Spotify URL and output folder.');
+    if (!musicUrl || !outputFolder) {
+        alert('Please provide both URL and output folder.');
         return;
     }
 
-    await startDownload(spotifyUrl, outputFolder);
+    await startDownload(musicUrl, outputFolder);
 }
 
 /**
@@ -296,39 +362,39 @@ function updateProgressFromLogs(logData) {
 
     // Look for the most recent progress indicator
     const lines = logContent.split('\n').filter(line => line.trim());
-    let latestStatus = CONSTANTS.STATUS_PREPARING;
+    let latestStatus = window.CONSTANTS.STATUS_PREPARING;
 
     for (let i = lines.length - 1; i >= 0; i--) {
         const line = lines[i].trim();
 
-        if (line.includes(CONSTANTS.LOG_DETECTED) && line.includes('tracks')) {
+        if (line.includes(window.CONSTANTS.LOG_DETECTED) && line.includes('tracks')) {
             const match = line.match(/Detected (\d+) tracks/);
             if (match) {
                 latestStatus = `Found ${match[1]} tracks to download`;
-                elements.progressFill.style.width = CONSTANTS.PROGRESS_TRACKS_FOUND;
+                elements.progressFill.style.width = window.CONSTANTS.PROGRESS_TRACKS_FOUND;
             }
             break;
-        } else if (line.startsWith(CONSTANTS.LOG_DOWNLOADING)) {
-            const trackName = line.replace(CONSTANTS.LOG_DOWNLOADING, '').trim();
-            latestStatus = `${CONSTANTS.LOG_DOWNLOADING} ${trackName}`;
-            elements.progressFill.style.width = CONSTANTS.PROGRESS_DOWNLOADING;
+        } else if (line.startsWith(window.CONSTANTS.LOG_DOWNLOADING)) {
+            const trackName = line.replace(window.CONSTANTS.LOG_DOWNLOADING, '').trim();
+            latestStatus = `${window.CONSTANTS.LOG_DOWNLOADING} ${trackName}`;
+            elements.progressFill.style.width = window.CONSTANTS.PROGRESS_DOWNLOADING;
             break;
-        } else if (line.startsWith(CONSTANTS.LOG_FINISHED)) {
-            const trackName = line.replace(CONSTANTS.LOG_FINISHED, '').trim();
+        } else if (line.startsWith(window.CONSTANTS.LOG_FINISHED)) {
+            const trackName = line.replace(window.CONSTANTS.LOG_FINISHED, '').trim();
             latestStatus = `Completed: ${trackName}`;
-            elements.progressFill.style.width = CONSTANTS.PROGRESS_COMPLETED;
+            elements.progressFill.style.width = window.CONSTANTS.PROGRESS_COMPLETED;
             break;
         } else if (line.includes('Finished all downloads')) {
             latestStatus = 'All downloads completed!';
-            elements.progressFill.style.width = CONSTANTS.PROGRESS_FINISHED;
+            elements.progressFill.style.width = window.CONSTANTS.PROGRESS_FINISHED;
             break;
-        } else if (line.includes(CONSTANTS.UI_MESSAGES.DOWNLOAD_STOPPED)) {
-            latestStatus = CONSTANTS.UI_MESSAGES.DOWNLOAD_STOPPED;
-            elements.progressFill.style.width = CONSTANTS.PROGRESS_PREPARING;
+        } else if (line.includes(window.CONSTANTS.UI_MESSAGES.DOWNLOAD_STOPPED)) {
+            latestStatus = window.CONSTANTS.UI_MESSAGES.DOWNLOAD_STOPPED;
+            elements.progressFill.style.width = window.CONSTANTS.PROGRESS_PREPARING;
             break;
-        } else if (line.includes(CONSTANTS.UI_MESSAGES.DOWNLOAD_FAILED)) {
-            latestStatus = CONSTANTS.UI_MESSAGES.DOWNLOAD_FAILED;
-            elements.progressFill.style.width = CONSTANTS.PROGRESS_PREPARING;
+        } else if (line.includes(window.CONSTANTS.UI_MESSAGES.DOWNLOAD_FAILED)) {
+            latestStatus = window.CONSTANTS.UI_MESSAGES.DOWNLOAD_FAILED;
+            elements.progressFill.style.width = window.CONSTANTS.PROGRESS_PREPARING;
             break;
         }
     }
@@ -350,8 +416,8 @@ function showResults(files) {
         elements.resultsList.appendChild(fileElement);
     });
 
-    elements.progressFill.style.width = CONSTANTS.PROGRESS_FINISHED;
-    elements.progressText.textContent = CONSTANTS.UI_MESSAGES.DOWNLOAD_COMPLETE;
+    elements.progressFill.style.width = window.CONSTANTS.PROGRESS_FINISHED;
+    elements.progressText.textContent = window.CONSTANTS.UI_MESSAGES.DOWNLOAD_COMPLETE;
 }
 
 /**
@@ -376,8 +442,8 @@ function resetForm() {
         elements.logOutput.textContent = '';
     }
     
-    if (elements.progressFill && CONSTANTS) {
-        elements.progressFill.style.width = CONSTANTS.PROGRESS_PREPARING;
+    if (elements.progressFill && window.CONSTANTS) {
+        elements.progressFill.style.width = window.CONSTANTS.PROGRESS_PREPARING;
     }
     
     if (elements.stopBtn) {
@@ -405,13 +471,13 @@ function setDownloadingState(isDownloading) {
     }
 
     const btnText = document.querySelector('.btn-text');
-    if (btnText && CONSTANTS) {
+    if (btnText && window.CONSTANTS) {
         btnText.textContent = isDownloading ?
-            CONSTANTS.UI_MESSAGES.DOWNLOADING : CONSTANTS.UI_MESSAGES.DOWNLOAD_MUSIC;
+            window.CONSTANTS.UI_MESSAGES.DOWNLOADING : window.CONSTANTS.UI_MESSAGES.DOWNLOAD_MUSIC;
     }
 
-    if (elements.spotifyUrlInput) {
-        elements.spotifyUrlInput.disabled = isDownloading;
+    if (elements.musicUrlInput) {
+        elements.musicUrlInput.disabled = isDownloading;
     }
 
     if (elements.selectFolderBtn) {
@@ -423,8 +489,8 @@ function setDownloadingState(isDownloading) {
         if (isDownloading) {
             elements.stopBtn.disabled = false;
             const stopText = elements.stopBtn.querySelector('.stop-text');
-            if (stopText && CONSTANTS) {
-                stopText.textContent = CONSTANTS.UI_MESSAGES.STOP;
+            if (stopText && window.CONSTANTS) {
+                stopText.textContent = window.CONSTANTS.UI_MESSAGES.STOP;
             }
         }
     }

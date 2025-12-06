@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EasyMusic - Spotify Downloader</title>
+    <title>EasyMusic - Music Downloader</title>
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -24,7 +24,7 @@
                 <i class="fas fa-music"></i>
                 <h1>EasyMusic</h1>
             </div>
-            <p class="subtitle">Download music from Spotify with one click</p>
+            <p class="subtitle">Download music from Spotify and YouTube with one click</p>
         </header>
 
         <main class="main">
@@ -44,11 +44,17 @@
                         <i class="fas fa-link input-icon"></i>
                     <input
                         type="url"
-                        id="spotifyUrl"
-                        placeholder="Paste a Spotify track, album, or playlist URL"
+                        id="musicUrl"
+                        placeholder="Loading..."
                         required
                     >
-                    <label class="input-label">Spotify URL</label>
+                    <label class="input-label">Music URL</label>
+                    <button type="button" id="modeToggleBtn" class="mode-toggle-btn" data-mode="spotify">
+                        <div class="toggle-slider">
+                            <i class="fab fa-spotify spotify-icon"></i>
+                            <i class="fab fa-youtube youtube-icon"></i>
+                        </div>
+                    </button>
                 </div>
                 </div>
 
@@ -130,7 +136,7 @@
                     <span>EasyMusic</span>
                 </div>
                 <div class="footer-links">
-                    <span>Spotify Downloader</span>
+                    <span>Music Downloader</span>
                     <span>•</span>
                     <span>v1.0.0</span>
                 </div>

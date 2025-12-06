@@ -271,6 +271,23 @@ def main() -> bool:
             print("💡 Check your internet connection and try again")
             return False
 
+        # Install yt-dlp for YouTube downloads
+        print("\n📦 Installing yt-dlp...")
+        success, output = run_command(
+            f"{venv_pip} install yt-dlp",
+            description="Installing yt-dlp for YouTube downloads"
+        )
+        if not success:
+            print("⚠️  Warning: Failed to install yt-dlp via pip, trying system installation...")
+            # Try system installation as fallback
+            success, output = run_command(
+                "pip3 install yt-dlp --user",
+                description="Installing yt-dlp system-wide as fallback"
+            )
+            if not success:
+                print("⚠️  Warning: yt-dlp installation failed. YouTube downloads may not work.")
+                print("💡 You can manually install yt-dlp with: pip install yt-dlp")
+
         # Create wrapper script
         print("\n📝 Creating wrapper script...")
         if not create_wrapper_script(wrapper_path):
