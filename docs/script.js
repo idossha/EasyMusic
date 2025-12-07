@@ -17,13 +17,14 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function updateDownloadLinks() {
-        const os = detectOS();
+    function updateDownloadLinks(selectedOs = null) {
+        const detectedOs = detectOS();
+        const os = selectedOs || detectedOs;
         const mainDownloadBtn = document.getElementById('mainDownloadBtn');
         const downloadText = document.getElementById('downloadText');
         const downloadOptions = document.querySelectorAll('.download-option');
 
-        // Update main download button text based on detected OS
+        // Update main download button text based on selected/detected OS
         let osName = 'EasyMusic';
         switch (os) {
             case 'windows':
@@ -40,7 +41,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         downloadText.textContent = osName;
 
-        // Highlight the detected OS option
+        // Highlight the selected/detected OS option
         downloadOptions.forEach(option => {
             if (option.getAttribute('data-os') === os) {
                 option.classList.add('active');
@@ -49,28 +50,22 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        // Update download button hrefs to point to latest release assets
-        if (os !== 'unknown') {
-            const releaseUrls = {
-                windows: 'https://github.com/idohaber/EasyMusic/releases/latest/download/EasyMusic%20Setup%200.1.0.exe',
-                macos: 'https://github.com/idohaber/EasyMusic/releases/latest/download/EasyMusic-0.1.0.dmg',
-                linux: 'https://github.com/idohaber/EasyMusic/releases/latest/download/EasyMusic-0.1.0.AppImage'
-            };
-
-            if (releaseUrls[os]) {
-                mainDownloadBtn.href = releaseUrls[os];
-                downloadOptions.forEach(option => {
-                    const optionOs = option.getAttribute('data-os');
-                    if (releaseUrls[optionOs]) {
-                        option.href = releaseUrls[optionOs];
-                    }
-                });
-            }
-        }
+        // Main download button always points to latest release (will auto-detect OS on GitHub)
+        mainDownloadBtn.href = 'https://github.com/idohaber/EasyMusic/releases/latest';
     }
 
     // Initialize download links
     updateDownloadLinks();
+
+    // Add click handlers for OS options (act as switches)
+    const downloadOptions = document.querySelectorAll('.download-option');
+    downloadOptions.forEach(option => {
+        option.addEventListener('click', function(e) {
+            e.preventDefault(); // Prevent default link behavior
+            const selectedOs = this.getAttribute('data-os');
+            updateDownloadLinks(selectedOs);
+        });
+    });
 
     // Add smooth scrolling for any anchor links
     const links = document.querySelectorAll('a[href^="#"]');
@@ -101,8 +96,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }, observerOptions);
 
-    // Observe all sections for professional reveal (exclude hero only)
-    const sections = document.querySelectorAll('.section:not(.hero-section)');
+    // Observe all sections for professional reveal (exclude hero and download sections)
+    const sections = document.querySelectorAll('.section:not(.hero-section):not(:has(.download-section))');
     sections.forEach(section => {
         section.classList.add('section-hidden');
         observer.observe(section);
