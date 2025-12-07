@@ -68,37 +68,24 @@
                 </div>
             </section>
 
+            <!-- Gatekeeper Note -->
+            <section class="section">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    <div>
+                        <strong>macOS Users:</strong> The app is code-signed but not notarized. Right-click the app and select "Open" on first launch to bypass Gatekeeper.
+                    </div>
+                </div>
+            </section>
+
             <!-- Quick Start -->
             <section class="section">
-                <div class="section-header">
-                    <i class="fas fa-rocket"></i>
-                    <h2>Quick Start</h2>
-                </div>
-                <div class="steps-grid">
-                    <div class="step-card">
-                        <div class="step-number">1</div>
-                        <h3>Install Prerequisites</h3>
-                        <p>Make sure you have Node.js 14+ and Python 3.7+ installed on your system.</p>
-                        <div class="code-block">
-                            <code># Check versions<br>node --version<br>python3 --version</code>
-                        </div>
-                    </div>
-                    <div class="step-card">
-                        <div class="step-number">2</div>
-                        <h3>Setup the App</h3>
-                        <p>Clone the repository and install dependencies.</p>
-                        <div class="code-block">
-                            <code>git clone https://github.com/yourusername/easymusic.git<br>cd easymusic<br>npm install</code>
-                        </div>
-                    </div>
-                    <div class="step-card">
-                        <div class="step-number">3</div>
-                        <h3>Build & Run</h3>
-                        <p>Build the downloader and start the app.</p>
-                        <div class="code-block">
-                            <code>npm run build-spotdl<br>npm run dev</code>
-                        </div>
-                    </div>
+                <div class="download-section">
+                    <a href="https://github.com/idohaber/EasyMusic/releases" class="download-btn" target="_blank">
+                        <i class="fas fa-download"></i>
+                        Download EasyMusic
+                    </a>
+                    <p class="download-note">Latest version available for Windows, macOS, and Linux</p>
                 </div>
             </section>
 
@@ -154,39 +141,6 @@
                 </div>
             </section>
 
-            <!-- Supported URLs -->
-            <section class="section">
-                <div class="section-header">
-                    <i class="fas fa-link"></i>
-                    <h2>Supported URLs</h2>
-                </div>
-                <div class="url-examples">
-                    <div class="url-example">
-                        <div class="url-type">
-                            <i class="fas fa-music"></i>
-                            <span>Tracks</span>
-                        </div>
-                        <code>https://open.spotify.com/track/4uLU6hMCjMI75M1A2tKUQC</code>
-                        <code>https://music.youtube.com/watch?v=dQw4w9WgXcQ</code>
-                    </div>
-                    <div class="url-example">
-                        <div class="url-type">
-                            <i class="fas fa-compact-disc"></i>
-                            <span>Albums</span>
-                        </div>
-                        <code>https://open.spotify.com/album/4yP0hdKOZPNshxUOjY0cZj</code>
-                        <code>https://music.youtube.com/playlist?list=OLAK5uy_...</code>
-                    </div>
-                    <div class="url-example">
-                        <div class="url-type">
-                            <i class="fas fa-list"></i>
-                            <span>Playlists</span>
-                        </div>
-                        <code>https://open.spotify.com/playlist/37i9dQZF1DXcBWIGoYBM5M</code>
-                        <code>https://music.youtube.com/playlist?list=PLrAXtmRdnEQy...</code>
-                    </div>
-                </div>
-            </section>
 
             <!-- Usage Guide -->
             <section class="section">
@@ -226,76 +180,7 @@
                 </div>
             </section>
 
-            <!-- macOS Installation -->
-            <section class="section">
-                <div class="section-header">
-                    <i class="fab fa-apple"></i>
-                    <h2>macOS Installation</h2>
-                </div>
-                <div class="alert alert-warning">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    <div>
-                        <strong>Important:</strong> EasyMusic is code-signed but not notarized by Apple. When you first run the app, macOS will block it for security reasons.
-                    </div>
-                </div>
-                <div class="macos-steps">
-                    <div class="macos-step">
-                        <h3>First-Time Setup</h3>
-                        <ol>
-                            <li>Download the <code>.dmg</code> file from the releases page</li>
-                            <li>Double-click the <code>.dmg</code> file to mount it</li>
-                            <li><strong>Don't double-click the app icon directly</strong> - this will trigger the security block</li>
-                            <li>Instead, <strong>right-click</strong> on the EasyMusic app icon</li>
-                            <li>Select "Open" from the context menu</li>
-                            <li>In the security dialog that appears, click "Open" again</li>
-                        </ol>
-                    </div>
-                    <div class="macos-step">
-                        <h3>Alternative: Disable Gatekeeper Temporarily</h3>
-                        <div class="code-block">
-                            <code># Disable Gatekeeper<br>sudo spctl --master-disable<br><br># After installing and running EasyMusic, re-enable Gatekeeper<br>sudo spctl --master-enable</code>
-                        </div>
-                        <p class="security-note">
-                            <i class="fas fa-shield-alt"></i>
-                            <strong>Security Note:</strong> Only disable Gatekeeper if you trust the source. Re-enable it immediately after installation.
-                        </p>
-                    </div>
-                </div>
-            </section>
 
-            <!-- Troubleshooting -->
-            <section class="section">
-                <div class="section-header">
-                    <i class="fas fa-tools"></i>
-                    <h2>Troubleshooting</h2>
-                </div>
-                <div class="troubleshooting-grid">
-                    <div class="trouble-item">
-                        <h4>"Downloader not available"</h4>
-                        <p>Run <code>npm run build-spotdl</code> to set up the Python environment.</p>
-                    </div>
-                    <div class="trouble-item">
-                        <h4>Download fails</h4>
-                        <p>Check your URL, internet connection, and available disk space.</p>
-                    </div>
-                    <div class="trouble-item">
-                        <h4>Build issues</h4>
-                        <p>Ensure Python venv is available and try <code>npm run clean-spotdl</code>.</p>
-                    </div>
-                    <div class="trouble-item">
-                        <h4>FFmpeg errors</h4>
-                        <p>FFmpeg is automatically bundled. For development, run <code>npm run download-ffmpeg</code>.</p>
-                    </div>
-                    <div class="trouble-item">
-                        <h4>macOS "App cannot be opened"</h4>
-                        <p>See the macOS Installation section above.</p>
-                    </div>
-                    <div class="trouble-item">
-                        <h4>Permission issues</h4>
-                        <p>Try running the app with administrator/sudo privileges.</p>
-                    </div>
-                </div>
-            </section>
 
             <!-- Disclaimer -->
             <section class="section">
@@ -312,61 +197,6 @@
                 <p>This application is for <strong>personal, non-commercial use only</strong>. Users are expected to respect the intellectual property rights of artists and content creators, and comply with Spotify's Terms of Service and applicable local laws.</p>
             </section>
 
-            <!-- Development -->
-            <section class="section">
-                <div class="section-header">
-                    <i class="fas fa-code"></i>
-                    <h2>Development</h2>
-                </div>
-                <div class="dev-commands">
-                    <div class="command-group">
-                        <h3>Available Scripts</h3>
-                        <div class="command-list">
-                            <div class="command">
-                                <code>npm start</code>
-                                <span>Start the app in production mode</span>
-                            </div>
-                            <div class="command">
-                                <code>npm run dev</code>
-                                <span>Start the app in development mode</span>
-                            </div>
-                            <div class="command">
-                                <code>npm run build-spotdl</code>
-                                <span>Build the Python spotdl environment</span>
-                            </div>
-                            <div class="command">
-                                <code>npm run download-ffmpeg</code>
-                                <span>Download FFmpeg binaries</span>
-                            </div>
-                            <div class="command">
-                                <code>npm run build</code>
-                                <span>Build distributables for all platforms</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="command-group">
-                        <h3>Project Structure</h3>
-                        <div class="file-tree">
-                            <div class="file-item">
-                                <i class="fas fa-folder"></i>
-                                <span>main.js - Electron main process & download logic</span>
-                            </div>
-                            <div class="file-item">
-                                <i class="fas fa-folder"></i>
-                                <span>renderer/ - UI components</span>
-                            </div>
-                            <div class="file-item">
-                                <i class="fas fa-folder"></i>
-                                <span>scripts/ - Build and setup scripts</span>
-                            </div>
-                            <div class="file-item">
-                                <i class="fas fa-folder"></i>
-                                <span>config/ - Application configuration</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
         </main>
 
         <footer class="footer">

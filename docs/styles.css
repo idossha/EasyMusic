@@ -520,6 +520,55 @@ body::before {
     color: var(--accent-danger);
 }
 
+.alert-info {
+    background: rgba(0, 212, 255, 0.1);
+    border: 1px solid rgba(0, 212, 255, 0.2);
+}
+
+.alert-info i {
+    color: var(--accent-primary);
+}
+
+/* Download Section */
+.download-section {
+    text-align: center;
+    padding: 3rem 0;
+}
+
+.download-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    color: white;
+    text-decoration: none;
+    padding: 1.25rem 2.5rem;
+    border-radius: var(--border-radius);
+    font-size: 1.2rem;
+    font-weight: 600;
+    box-shadow: 0 8px 25px rgba(0, 212, 255, 0.4);
+    transition: var(--transition);
+    border: none;
+    cursor: pointer;
+}
+
+.download-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 35px rgba(0, 212, 255, 0.5);
+    text-decoration: none;
+    color: white;
+}
+
+.download-btn i {
+    font-size: 1.3rem;
+}
+
+.download-note {
+    margin-top: 1rem;
+    color: var(--text-secondary);
+    font-size: 1rem;
+}
+
 /* macOS Steps */
 .macos-steps {
     display: grid;
