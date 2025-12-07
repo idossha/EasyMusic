@@ -238,16 +238,22 @@ def main() -> bool:
 
     # Define paths
     venv_dir = "spotdl_env"
-    venv_bin_dir = os.path.join(venv_dir, "bin")
-    
-    # Check for python3 or python executable
-    venv_python = os.path.join(venv_bin_dir, "python3")
-    if not Path(venv_python).exists():
-        venv_python = os.path.join(venv_bin_dir, "python")
-    
-    venv_pip = os.path.join(venv_bin_dir, "pip3")
-    if not Path(venv_pip).exists():
-        venv_pip = os.path.join(venv_bin_dir, "pip")
+    # Use different directory names based on OS
+    venv_bin_dir_name = "Scripts" if os.name == 'nt' else "bin"
+    venv_bin_dir = os.path.join(venv_dir, venv_bin_dir_name)
+
+    # Check for python executable (different naming on Windows)
+    if os.name == 'nt':  # Windows
+        venv_python = os.path.join(venv_bin_dir, "python.exe")
+        venv_pip = os.path.join(venv_bin_dir, "pip.exe")
+    else:  # Unix-like systems
+        venv_python = os.path.join(venv_bin_dir, "python3")
+        if not Path(venv_python).exists():
+            venv_python = os.path.join(venv_bin_dir, "python")
+
+        venv_pip = os.path.join(venv_bin_dir, "pip3")
+        if not Path(venv_pip).exists():
+            venv_pip = os.path.join(venv_bin_dir, "pip")
     
     wrapper_path = os.path.join(venv_dir, "spotdl_wrapper.py")
 
@@ -310,17 +316,19 @@ def main() -> bool:
         if not create_wrapper_script(wrapper_path):
             return False
 
-        # Create python symlink if it doesn't exist (for compatibility)
-        python_link = os.path.join(venv_bin_dir, "python")
-        python3_path = os.path.join(venv_bin_dir, "python3")
-        
-        if Path(python3_path).exists() and not Path(python_link).exists():
-            try:
-                if os.name != 'nt':  # Unix-like systems
+        # Create python symlink if it doesn't exist (for compatibility on Unix-like systems)
+        if os.name != 'nt':  # Only on Unix-like systems
+            python_link = os.path.join(venv_bin_dir, "python")
+            python3_path = os.path.join(venv_bin_dir, "python3")
+
+            if Path(python3_path).exists() and not Path(python_link).exists():
+                try:
                     os.symlink("python3", python_link)
                     print(f"  [OK] Created python symlink for compatibility")
-            except Exception as e:
-                print(f"  [WARN] Could not create python symlink (non-critical): {e}")
+                except Exception as e:
+                    print(f"  [WARN] Could not create python symlink (non-critical): {e}")
+        else:
+            print(f"  [INFO] Windows detected - skipping symlink creation")
 
         # Verify installation
         print("\nVerifying installation...")

@@ -103,6 +103,7 @@ jobs:
           fi
 
       - name: Upload macOS DMG artifacts
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.name }}-dmg
@@ -143,6 +144,7 @@ jobs:
         run: npx electron-builder --win --x64 --publish never
 
       - name: Upload Windows artifacts
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: Windows
@@ -183,6 +185,7 @@ jobs:
         run: npx electron-builder --linux --x64 --publish never
 
       - name: Upload Linux artifacts
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: Linux
@@ -193,7 +196,7 @@ jobs:
 
   release:
     name: Upload to Release
-    needs: [build-mac, build-windows, build-linux]
+    needs: create-release
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -208,6 +211,7 @@ jobs:
         run: ls -R artifacts
 
       - name: Upload macOS Silicon DMG to release
+        if: hashFiles('artifacts/macOS-Silicon-dmg/*') != ''
         uses: softprops/action-gh-release@v1
         with:
           files: artifacts/macOS-Silicon-dmg/*
@@ -215,6 +219,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Windows to release
+        if: hashFiles('artifacts/Windows/*') != ''
         uses: softprops/action-gh-release@v1
         with:
           files: artifacts/Windows/*
@@ -222,6 +227,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Linux to release
+        if: hashFiles('artifacts/Linux/*') != ''
         uses: softprops/action-gh-release@v1
         with:
           files: artifacts/Linux/*
