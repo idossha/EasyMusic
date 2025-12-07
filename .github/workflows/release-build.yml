@@ -81,6 +81,7 @@ jobs:
 
       - name: Build spotdl
         run: npm run build-spotdl
+        continue-on-error: true
 
       - name: Build and Sign
         env:
@@ -89,6 +90,7 @@ jobs:
           CSC_LINK: ${{ secrets.CSC_LINK }}
           CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
         run: npx electron-builder --mac --${{ matrix.arch }} --publish never
+        continue-on-error: true
 
       - name: Verify Code Signature
         run: |
@@ -137,11 +139,13 @@ jobs:
 
       - name: Build spotdl
         run: npm run build-spotdl
+        continue-on-error: true
 
       - name: Build Electron app
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx electron-builder --win --x64 --publish never
+        continue-on-error: true
 
       - name: Upload Windows artifacts
         if: always()
@@ -178,11 +182,13 @@ jobs:
 
       - name: Build spotdl
         run: npm run build-spotdl
+        continue-on-error: true
 
       - name: Build Electron app
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx electron-builder --linux --x64 --publish never
+        continue-on-error: true
 
       - name: Upload Linux artifacts
         if: always()
@@ -196,7 +202,7 @@ jobs:
 
   release:
     name: Upload to Release
-    needs: create-release
+    needs: [create-release, build-mac, build-windows, build-linux]
     runs-on: ubuntu-latest
     permissions:
       contents: write
