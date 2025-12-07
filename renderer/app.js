@@ -38,8 +38,6 @@ function cacheElements() {
     elements.resultsList = document.getElementById('resultsList');
     elements.downloadAnotherBtn = document.getElementById('downloadAnotherBtn');
     elements.stopBtn = document.getElementById('stopBtn');
-    elements.statusIndicator = document.getElementById('statusIndicator');
-    elements.statusText = document.getElementById('statusText');
     elements.spinner = document.getElementById('spinner');
     elements.modeToggleBtn = document.getElementById('modeToggleBtn');
 }
@@ -99,7 +97,6 @@ function updateInputForMode() {
  */
 function updateUIForMode() {
     updateInputForMode();
-    checkDownloaderStatus();
 }
 
 /**
@@ -122,46 +119,12 @@ async function initializeApp() {
 
         // Set initial mode
         updateInputForMode();
-
-        // Check downloader status on startup
-        await checkDownloaderStatus();
     } catch (error) {
         console.error('Failed to initialize app:', error.message);
         alert(`Failed to initialize application: ${error.message}\n\nPlease restart the app.`);
     }
 }
 
-/**
- * Checks the downloader status and updates the UI accordingly
- */
-async function checkDownloaderStatus() {
-    try {
-        let downloaderAvailable = false;
-
-        if (currentMode === window.CONSTANTS.DOWNLOAD_MODES.SPOTIFY) {
-            const spotifyStatus = await window.electronAPI.checkSpotifydl();
-            downloaderAvailable = spotifyStatus.available;
-        } else if (currentMode === window.CONSTANTS.DOWNLOAD_MODES.YOUTUBE) {
-            const youtubeStatus = await window.electronAPI.checkYtdlp();
-            downloaderAvailable = youtubeStatus.available;
-        }
-
-        if (downloaderAvailable) {
-            elements.statusIndicator.className = 'status-indicator success';
-            elements.statusText.textContent = window.CONSTANTS.STATUS_READY;
-            elements.downloadBtn.disabled = false;
-        } else {
-            elements.statusIndicator.className = 'status-indicator error';
-            elements.statusText.textContent = window.CONSTANTS.STATUS_NOT_AVAILABLE;
-            elements.downloadBtn.disabled = true;
-        }
-    } catch (error) {
-        console.error('Failed to check downloader status:', error.message);
-        elements.statusIndicator.className = 'status-indicator error';
-        elements.statusText.textContent = window.CONSTANTS.STATUS_FAILED;
-        elements.downloadBtn.disabled = true;
-    }
-}
 
 /**
  * Handles the folder selection button click

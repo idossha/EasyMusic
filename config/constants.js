@@ -8,7 +8,6 @@
 
 const CONSTANTS = {
   // Timeout values (in milliseconds)
-  SPOTDL_CHECK_TIMEOUT: 5000,
   DOWNLOAD_TIMEOUT: 30 * 60 * 1000, // 30 minutes (increased for large playlists)
   GRACEFUL_KILL_TIMEOUT: 5000,
 
@@ -28,12 +27,11 @@ const CONSTANTS = {
     MAX_RETRIES: '5'
   },
 
-  // YouTube-dl configuration
+  // yt-dlp configuration
   YTDLP_ARGS: {
-    COMMAND: 'yt-dlp',
-    FORMAT: 'bestaudio/best',
+    FORMAT: 'bestaudio[ext=m4a]/best[ext=m4a]',
     AUDIO_FORMAT: 'mp3',
-    AUDIO_QUALITY: '192K',
+    AUDIO_QUALITY: '320K',
     MAX_RETRIES: '5',
     OUTPUT_TEMPLATE: '%(title)s.%(ext)s'
   },
@@ -58,10 +56,6 @@ const CONSTANTS = {
   PROGRESS_FINISHED: '100%',
 
   // Status messages
-  STATUS_CHECKING: 'Checking downloader...',
-  STATUS_READY: 'Downloader is ready',
-  STATUS_NOT_AVAILABLE: 'Downloader not available. Please run: npm run build-spotdl',
-  STATUS_FAILED: 'Failed to check downloader status',
   STATUS_PREPARING: 'Preparing download...',
   STATUS_STOPPED: 'Download stopped',
   STATUS_FAILED_DOWNLOAD: 'Download failed',
@@ -92,8 +86,6 @@ const CONSTANTS = {
   IPC_EVENTS: {
     DOWNLOAD_MUSIC: 'download-music',
     DOWNLOAD_YOUTUBE: 'download-youtube',
-    CHECK_SPOTIFYDL: 'check-spotifydl',
-    CHECK_YTDLP: 'check-ytdlp',
     SELECT_OUTPUT_FOLDER: 'select-output-folder',
     STOP_DOWNLOAD: 'stop-download',
     DOWNLOAD_PROGRESS: 'download-progress'

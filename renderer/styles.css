@@ -148,66 +148,6 @@ body::before {
     background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary), var(--accent-success));
 }
 
-/* Status Card */
-.status-card {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 2.5rem;
-    padding: 1.5rem;
-    border-radius: var(--border-radius-sm);
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid var(--card-border);
-    backdrop-filter: blur(10px);
-    transition: all 0.3s ease;
-}
-
-.status-card:hover {
-    border-color: rgba(0, 212, 255, 0.3);
-    box-shadow: 0 0 20px rgba(0, 212, 255, 0.1);
-}
-
-.status-icon {
-    display: none;
-}
-
-.status-content {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.status-indicator {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--accent-warning);
-    box-shadow: 0 0 8px var(--accent-warning);
-    animation: pulse 2s infinite;
-}
-
-.status-indicator.success {
-    background: var(--accent-success);
-    box-shadow: 0 0 8px var(--accent-success);
-    animation: none;
-}
-
-.status-indicator.error {
-    background: var(--accent-danger);
-    box-shadow: 0 0 8px var(--accent-danger);
-    animation: none;
-}
-
-@keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
-}
-
-#statusText {
-    font-weight: 500;
-    color: var(--text-secondary);
-    font-size: 0.95rem;
-}
 
 /* Form styles */
 .download-form {
@@ -768,12 +708,6 @@ body::before {
         padding: 1rem;
     }
 
-    .status-card {
-        padding: 1rem;
-        flex-direction: column;
-        text-align: center;
-        gap: 0.75rem;
-    }
 
     .input-wrapper:has(.browse-btn) {
         padding-right: 100px;

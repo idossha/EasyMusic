@@ -9,13 +9,15 @@
     "start": "electron .",
     "dev": "electron . --dev",
     "build-spotdl": "python3 scripts/build-spotdl-pyinstaller.py",
+    "build-ytdlp": "python3 scripts/build-ytdlp-pyinstaller.py",
     "download-ffmpeg": "bash scripts/download-ffmpeg.sh",
-    "build": "npm run build-spotdl && npm run download-ffmpeg && electron-builder",
-    "build:verbose": "npm run build-spotdl && npm run download-ffmpeg && DEBUG=electron-builder electron-builder",
+    "build": "npm run build-spotdl && npm run build-ytdlp && npm run download-ffmpeg && electron-builder",
+    "build:verbose": "npm run build-spotdl && npm run build-ytdlp && npm run download-ffmpeg && DEBUG=electron-builder electron-builder",
     "build-electron": "electron-builder",
     "clean": "rm -rf dist build downloads spotdl_env node_modules binaries",
     "clean-downloads": "rm -rf downloads/*",
-    "clean-spotdl": "rm -rf spotdl_env binaries/spotdl"
+    "clean-spotdl": "rm -rf spotdl_env binaries/spotdl",
+    "clean-ytdlp": "rm -rf binaries/ytdlp"
   },
   "dependencies": {},
   "devDependencies": {

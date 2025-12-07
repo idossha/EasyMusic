@@ -28,9 +28,6 @@ const CONSTANTS = {
         NO_ACTIVE_DOWNLOAD: 'No active download process',
         FOLDER_PLACEHOLDER: 'Select output folder...'
     },
-    STATUS_READY: 'Downloader is ready',
-    STATUS_NOT_AVAILABLE: 'Downloader not available. Please run: npm run build-spotdl',
-    STATUS_FAILED: 'Failed to check downloader status',
     STATUS_PREPARING: 'Preparing download...',
     STATUS_STOPPED: 'Download stopped',
     STATUS_FAILED_DOWNLOAD: 'Download failed',
@@ -56,15 +53,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
         return ipcRenderer.invoke('download-youtube', youtubeUrl, outputFolder);
     },
 
-    // Check Spotifydl availability
-    checkSpotifydl: () => {
-        return ipcRenderer.invoke('check-spotifydl');
-    },
-
-    // Check yt-dlp availability
-    checkYtdlp: () => {
-        return ipcRenderer.invoke('check-ytdlp');
-    },
 
     // Select output folder
     selectOutputFolder: () => {
