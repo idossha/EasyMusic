@@ -84,14 +84,6 @@ jobs:
       - name: Build spotdl
         run: npm run build-spotdl
 
-      - name: Find binaries to sign
-        run: python3 scripts/find-binaries.py
-
-      - name: Sign Python binaries
-        env:
-          CSC_NAME: ${{ secrets.CSC_NAME }}
-        run: bash scripts/sign-binaries.sh
-
       - name: Build and Sign
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
