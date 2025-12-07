@@ -50,6 +50,7 @@ build-secrets.sh
 *.AppImage
 *.deb
 *.rpm
+EasyMusic.zip
 
 # Temporary files
 tmp/

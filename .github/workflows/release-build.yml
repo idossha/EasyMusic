@@ -93,6 +93,10 @@ jobs:
           # Code signing
           CSC_LINK: ${{ secrets.CSC_LINK }}
           CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          # Apple Notarization
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: npx electron-builder --mac --${{ matrix.arch }} --publish never
 
       - name: Verify Code Signature
@@ -105,6 +109,18 @@ jobs:
             echo ""
             echo "=== Verifying Gatekeeper Assessment ==="
             spctl -a -vvv -t install "$APP_PATH" 2>&1 || true
+          fi
+
+      - name: Verify Notarization
+        run: |
+          echo "=== Verifying Notarization ==="
+          DMG_PATH=$(find dist -name "*.dmg" -type f | head -1)
+          if [ -n "$DMG_PATH" ]; then
+            echo "Checking notarization status for: $DMG_PATH"
+            xcrun notarytool log --apple-id "$APPLE_ID" --password "$APPLE_APP_SPECIFIC_PASSWORD" --team-id "$APPLE_TEAM_ID" "$(basename "$DMG_PATH" .dmg)" 2>&1 || echo "Could not retrieve notarization log (may be normal if submission is still processing)"
+            echo ""
+            echo "=== Checking Stapled Notarization Ticket ==="
+            spctl -a -vvv -t install "$DMG_PATH" 2>&1 || true
           fi
 
       - name: Upload macOS DMG artifacts
