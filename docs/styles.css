@@ -38,6 +38,7 @@ body {
     overflow-x: hidden;
     position: relative;
     line-height: 1.6;
+    scroll-behavior: smooth;
 }
 
 body::before {
@@ -62,6 +63,7 @@ body::before {
     height: 100%;
     pointer-events: none;
     z-index: -1;
+    transform: translateZ(0);
 }
 
 .particle {
@@ -140,10 +142,11 @@ body::before {
     backdrop-filter: blur(20px);
     border: 1px solid var(--card-border);
     border-radius: var(--border-radius-lg);
-    padding: 3rem;
+    padding: 2rem;
     box-shadow: var(--shadow);
     position: relative;
     overflow: hidden;
+    scroll-behavior: smooth;
 }
 
 .main::before {
@@ -161,8 +164,8 @@ body::before {
     display: flex;
     align-items: center;
     gap: 1rem;
-    margin-bottom: 2rem;
-    padding-bottom: 1rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
     border-bottom: 1px solid var(--card-border);
 }
 
@@ -183,7 +186,7 @@ body::before {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 3rem;
-    margin-bottom: 4rem;
+    margin-bottom: 3rem;
     align-items: center;
 }
 
@@ -360,16 +363,16 @@ body::before {
 /* Features Grid */
 .features-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 4rem;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-bottom: 0;
 }
 
 .feature-card {
     background: rgba(255, 255, 255, 0.02);
     border: 1px solid var(--card-border);
     border-radius: var(--border-radius);
-    padding: 2rem;
+    padding: 1.5rem;
     transition: var(--transition);
     text-align: center;
 }
@@ -449,13 +452,13 @@ body::before {
 /* Usage Steps */
 .usage-steps {
     display: grid;
-    gap: 2rem;
-    margin-bottom: 4rem;
+    gap: 1rem;
+    margin-bottom: 0;
 }
 
 .usage-step {
     display: flex;
-    gap: 1.5rem;
+    gap: 1rem;
     align-items: flex-start;
 }
 
@@ -489,8 +492,8 @@ body::before {
 /* Alerts */
 .alert {
     border-radius: var(--border-radius);
-    padding: 1.5rem;
-    margin-bottom: 2rem;
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
     display: flex;
     gap: 1rem;
     align-items: flex-start;
@@ -532,7 +535,7 @@ body::before {
 /* Download Section */
 .download-section {
     text-align: center;
-    padding: 3rem 0;
+    padding: 2rem 0;
 }
 
 .download-btn {
@@ -910,6 +913,137 @@ a {
 
 a:hover {
     color: var(--accent-secondary);
+}
+
+/* Professional Scroll Reveal Animations */
+.section-hidden {
+    opacity: 0;
+    transform: translateY(60px) scale(0.95);
+    transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    filter: blur(10px);
+}
+
+.section-revealed {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+}
+
+/* Scroll snap for sections */
+.section {
+    scroll-margin-top: 1.5rem;
+    scroll-snap-margin: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Section-specific margin adjustments */
+.section:has(.alert) {
+    margin-bottom: 1.5rem;
+}
+
+.section:has(.download-section) {
+    margin-bottom: 2rem;
+}
+
+.section:has(.features-grid) {
+    margin-bottom: 1rem;
+}
+
+.section:has(.usage-steps) {
+    margin-bottom: 1rem;
+}
+
+.section:last-of-type {
+    margin-bottom: 1rem;
+}
+
+/* Enhanced animations for different section types */
+.section-hidden .section-header {
+    transform: translateY(40px);
+    opacity: 0;
+    transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    transition-delay: 0.1s;
+}
+
+.section-revealed .section-header {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.section-hidden .alert {
+    transform: translateX(-30px);
+    opacity: 0;
+    transition: all 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    transition-delay: 0.2s;
+}
+
+.section-revealed .alert {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.section-hidden .download-section {
+    transform: scale(0.9);
+    opacity: 0;
+    transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    transition-delay: 0.3s;
+}
+
+.section-revealed .download-section {
+    transform: scale(1);
+    opacity: 1;
+}
+
+.section-hidden .usage-steps .usage-step,
+.section-hidden .features-grid .feature-card {
+    transform: translateY(50px);
+    opacity: 0;
+    transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.section-revealed .usage-steps .usage-step:nth-child(1),
+.section-revealed .features-grid .feature-card:nth-child(1) {
+    animation: slideInUp 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    animation-delay: 0.4s;
+}
+
+.section-revealed .usage-steps .usage-step:nth-child(2),
+.section-revealed .features-grid .feature-card:nth-child(2) {
+    animation: slideInUp 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    animation-delay: 0.5s;
+}
+
+.section-revealed .usage-steps .usage-step:nth-child(3),
+.section-revealed .features-grid .feature-card:nth-child(3) {
+    animation: slideInUp 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    animation-delay: 0.6s;
+}
+
+.section-revealed .usage-steps .usage-step:nth-child(4),
+.section-revealed .features-grid .feature-card:nth-child(4) {
+    animation: slideInUp 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    animation-delay: 0.7s;
+}
+
+.section-revealed .features-grid .feature-card:nth-child(5) {
+    animation: slideInUp 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    animation-delay: 0.8s;
+}
+
+.section-revealed .features-grid .feature-card:nth-child(6) {
+    animation: slideInUp 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    animation-delay: 0.9s;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Scrollbar */

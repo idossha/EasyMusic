@@ -87,29 +87,77 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Add some subtle animations on scroll
+    // Professional scroll reveal animations
     const observerOptions = {
         threshold: 0.1,
-        rootMargin: '0px 0px -50px 0px'
+        rootMargin: '0px 0px -150px 0px'
     };
 
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
-                entry.target.style.opacity = '1';
-                entry.target.style.transform = 'translateY(0)';
+                entry.target.classList.add('section-revealed');
             }
         });
     }, observerOptions);
 
-    // Observe all sections for fade-in animation
-    const sections = document.querySelectorAll('.section');
+    // Observe all sections for professional reveal (exclude hero only)
+    const sections = document.querySelectorAll('.section:not(.hero-section)');
     sections.forEach(section => {
-        section.style.opacity = '0';
-        section.style.transform = 'translateY(20px)';
-        section.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        section.classList.add('section-hidden');
         observer.observe(section);
     });
+
+    // Scroll snap behavior for sections
+    const scrollContainer = document.querySelector('.main');
+    let isScrolling = false;
+
+    function handleScroll() {
+        if (!isScrolling) {
+            isScrolling = true;
+            setTimeout(() => {
+                isScrolling = false;
+            }, 100);
+
+            const sections = document.querySelectorAll('.section');
+            const scrollY = window.scrollY;
+            const windowHeight = window.innerHeight;
+
+            sections.forEach((section, index) => {
+                const rect = section.getBoundingClientRect();
+                const sectionTop = rect.top + scrollY;
+
+                // Trigger reveal when section is in viewport
+                if (sectionTop < scrollY + windowHeight * 0.9 && sectionTop + rect.height > scrollY + windowHeight * 0.1) {
+                    section.classList.add('section-revealed');
+                }
+            });
+        }
+    }
+
+    // Throttle scroll events for better performance
+    let scrollTimeout;
+    window.addEventListener('scroll', () => {
+        if (!scrollTimeout) {
+            scrollTimeout = setTimeout(() => {
+                handleScroll();
+                updateParallax();
+                scrollTimeout = null;
+            }, 16); // ~60fps
+        }
+    });
+
+    // Subtle parallax effect for particles
+    function updateParallax() {
+        const scrolled = window.scrollY;
+        const particles = document.querySelectorAll('.particle');
+
+        particles.forEach((particle, index) => {
+            const speed = (index + 1) * 0.1;
+            const yPos = -(scrolled * speed);
+            particle.style.transform = `translateY(${yPos}px)`;
+        });
+    }
 
     // Add hover effects for feature cards
     const featureCards = document.querySelectorAll('.feature-card, .step-card, .trouble-item');
