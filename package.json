@@ -81,9 +81,6 @@
         }
       ]
     },
-    "win": {
-      "icon": "assets/icon.png"
-    },
     "linux": {
       "category": "Audio",
       "icon": "assets/icon.png"

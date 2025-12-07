@@ -6,9 +6,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const userAgent = navigator.userAgent.toLowerCase();
         const platform = navigator.platform.toLowerCase();
 
-        if (userAgent.includes('win')) {
-            return 'windows';
-        } else if (userAgent.includes('mac') || platform.includes('mac')) {
+        if (userAgent.includes('mac') || platform.includes('mac')) {
             return 'macos';
         } else if (userAgent.includes('linux') || platform.includes('linux')) {
             return 'linux';
@@ -35,7 +33,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Define patterns for different OS artefacts
         const patterns = {
-            windows: /\.exe$/i,
             macos: /\.dmg$/i,
             linux: /\.(?:AppImage|deb)$/i
         };
@@ -58,9 +55,6 @@ document.addEventListener('DOMContentLoaded', function() {
         // Update main download button text based on selected/detected OS
         let osName = 'EasyMusic';
         switch (os) {
-            case 'windows':
-                osName = 'Download for Windows';
-                break;
             case 'macos':
                 osName = 'Download for macOS (Silicon)';
                 break;

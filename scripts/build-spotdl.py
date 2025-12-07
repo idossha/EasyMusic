@@ -96,7 +96,7 @@ def check_python_version() -> Tuple[bool, Optional[str]]:
         Tuple of (success: bool, python_command: str or None)
     """
     try:
-        # Try python first (works on Windows and some Unix systems), then python3.11, then python3.10
+        # Try python first (for compatibility), then python3.11, then python3.10
         python_cmds = ["python", "python3.11", "python3.10"]
 
         result = None
@@ -200,10 +200,9 @@ if __name__ == '__main__':
         # Write the wrapper script
         with open(wrapper_path_obj, "w", encoding="utf-8") as f:
             f.write(wrapper_script)
-        
+
         # Make it executable on Unix-like systems
-        if os.name != 'nt':  # Not Windows
-            os.chmod(wrapper_path_obj, 0o755)
+        os.chmod(wrapper_path_obj, 0o755)
             
         print(f"[OK] Created wrapper script: {wrapper_path}")
         return True
@@ -238,22 +237,16 @@ def main() -> bool:
 
     # Define paths
     venv_dir = "spotdl_env"
-    # Use different directory names based on OS
-    venv_bin_dir_name = "Scripts" if os.name == 'nt' else "bin"
-    venv_bin_dir = os.path.join(venv_dir, venv_bin_dir_name)
+    venv_bin_dir = os.path.join(venv_dir, "bin")
 
-    # Check for python executable (different naming on Windows)
-    if os.name == 'nt':  # Windows
-        venv_python = os.path.join(venv_bin_dir, "python.exe")
-        venv_pip = os.path.join(venv_bin_dir, "pip.exe")
-    else:  # Unix-like systems
-        venv_python = os.path.join(venv_bin_dir, "python3")
-        if not Path(venv_python).exists():
-            venv_python = os.path.join(venv_bin_dir, "python")
+    # Check for python executable (Unix-like systems)
+    venv_python = os.path.join(venv_bin_dir, "python3")
+    if not Path(venv_python).exists():
+        venv_python = os.path.join(venv_bin_dir, "python")
 
-        venv_pip = os.path.join(venv_bin_dir, "pip3")
-        if not Path(venv_pip).exists():
-            venv_pip = os.path.join(venv_bin_dir, "pip")
+    venv_pip = os.path.join(venv_bin_dir, "pip3")
+    if not Path(venv_pip).exists():
+        venv_pip = os.path.join(venv_bin_dir, "pip")
     
     wrapper_path = os.path.join(venv_dir, "spotdl_wrapper.py")
 
@@ -317,18 +310,15 @@ def main() -> bool:
             return False
 
         # Create python symlink if it doesn't exist (for compatibility on Unix-like systems)
-        if os.name != 'nt':  # Only on Unix-like systems
-            python_link = os.path.join(venv_bin_dir, "python")
-            python3_path = os.path.join(venv_bin_dir, "python3")
+        python_link = os.path.join(venv_bin_dir, "python")
+        python3_path = os.path.join(venv_bin_dir, "python3")
 
-            if Path(python3_path).exists() and not Path(python_link).exists():
-                try:
-                    os.symlink("python3", python_link)
-                    print(f"  [OK] Created python symlink for compatibility")
-                except Exception as e:
-                    print(f"  [WARN] Could not create python symlink (non-critical): {e}")
-        else:
-            print(f"  [INFO] Windows detected - skipping symlink creation")
+        if Path(python3_path).exists() and not Path(python_link).exists():
+            try:
+                os.symlink("python3", python_link)
+                print(f"  [OK] Created python symlink for compatibility")
+            except Exception as e:
+                print(f"  [WARN] Could not create python symlink (non-critical): {e}")
 
         # Verify installation
         print("\nVerifying installation...")

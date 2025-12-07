@@ -87,9 +87,8 @@ function getFfmpegPath() {
   if (platform === 'darwin') {
     // Only Apple Silicon (arm64) is supported for macOS
     binaryDir = 'darwin-arm64';
-  } else if (platform === 'win32') {
-    binaryDir = arch === 'x64' ? 'win32-x64' : 'win32-ia32';
   } else {
+    // Linux systems
     binaryDir = arch === 'x64' ? 'linux-x64' : 'linux-arm64';
   }
 
@@ -97,7 +96,7 @@ function getFfmpegPath() {
   const fsSync = require('fs');
 
   // Check if bundled FFmpeg exists, otherwise try system FFmpeg
-  if (fsSync.existsSync(ffmpegPath) || fsSync.existsSync(ffmpegPath + '.exe')) {
+  if (fsSync.existsSync(ffmpegPath)) {
     return ffmpegPath;
   }
 
@@ -114,7 +113,7 @@ function getSpotdlPaths() {
   const basePath = getBasePath();
   const venvDir = path.join(basePath, CONSTANTS.SPOTDL_ENV_DIR, 'bin');
 
-  // Try python3 first (common on macOS/Linux), then python (Windows)
+  // Try python3 first (common on macOS/Linux), then python
   let venvPython = path.join(venvDir, 'python3');
   if (!fsSync.existsSync(venvPython)) {
     venvPython = path.join(venvDir, 'python');
