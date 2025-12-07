@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     async function fetchLatestRelease() {
         try {
-            const response = await fetch('https://api.github.com/repos/idohaber/EasyMusic/releases/latest');
+            const response = await fetch('https://api.github.com/repos/idossha/EasyMusic/releases/latest');
             if (!response.ok) {
                 throw new Error(`GitHub API error: ${response.status}`);
             }
@@ -96,7 +96,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     console.log(`Download URL set for ${os}: ${downloadUrl}`);
                 } else {
                     // Fallback to releases page if specific asset not found
-                    mainDownloadBtn.href = 'https://github.com/idohaber/EasyMusic/releases/latest';
+                    mainDownloadBtn.href = 'https://github.com/idossha/EasyMusic/releases/latest';
                     mainDownloadBtn.target = '_blank';
                     console.warn(`No download URL found for ${os}, falling back to releases page`);
                 }
