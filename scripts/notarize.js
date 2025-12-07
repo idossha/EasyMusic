@@ -1,5 +1,8 @@
 const { notarize } = require('@electron/notarize');
 
+// Hardcoded Team ID (not sensitive, often publicly visible)
+const APPLE_TEAM_ID = '3BMY24SA43';
+
 exports.default = async function notarizing(context) {
   const { electronPlatformName, appOutDir } = context;
   if (electronPlatformName !== 'darwin') {
@@ -9,12 +12,15 @@ exports.default = async function notarizing(context) {
   const appName = context.packager.appInfo.productFilename;
   const appPath = `${appOutDir}/${appName}.app`;
 
+  // Use environment variable if available, otherwise use hardcoded value
+  const teamId = process.env.APPLE_TEAM_ID || APPLE_TEAM_ID;
+
   console.log(`Notarizing ${appPath}`);
 
   try {
     console.log('Starting notarization process...');
     console.log(`Apple ID: ${process.env.APPLE_ID ? 'Set' : 'Not set'}`);
-    console.log(`Team ID: ${process.env.APPLE_TEAM_ID ? 'Set' : 'Not set'}`);
+    console.log(`Team ID: ${teamId ? 'Set' : 'Not set'}`);
     console.log(`App-specific password: ${process.env.APPLE_APP_SPECIFIC_PASSWORD ? 'Set' : 'Not set'}`);
 
     await notarize({
@@ -22,7 +28,7 @@ exports.default = async function notarizing(context) {
       appPath,
       appleId: process.env.APPLE_ID,
       appleIdPassword: process.env.APPLE_APP_SPECIFIC_PASSWORD,
-      teamId: process.env.APPLE_TEAM_ID,
+      teamId: teamId,
     });
 
     console.log('Notarization completed successfully');
