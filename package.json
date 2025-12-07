@@ -38,8 +38,8 @@
       "!.git/**/*",
       "!.DS_Store",
       "!spotdl_env/**/*",
-      "!build/**/*",
-      "binaries/**/*"
+      "binaries/**/*",
+      "build/entitlements.mac.plist"
     ],
     "extraResources": [
       {
