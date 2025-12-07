@@ -24,7 +24,7 @@ def run_command(cmd: str, cwd: Optional[str] = None, description: str = "") -> T
         Tuple of (success: bool, output: str)
     """
     if not cmd or not isinstance(cmd, str):
-        print("❌ Invalid command")
+        print("[ERROR] Invalid command")
         return False, "Invalid command"
 
     try:
@@ -42,15 +42,15 @@ def run_command(cmd: str, cwd: Optional[str] = None, description: str = "") -> T
         )
         return True, result.stdout
     except subprocess.TimeoutExpired:
-        print(f"❌ Command timed out: {cmd}")
+        print(f"[ERROR] Command timed out: {cmd}")
         return False, "Command timed out"
     except subprocess.CalledProcessError as e:
-        print(f"❌ Command failed: {cmd}")
+        print(f"[ERROR] Command failed: {cmd}")
         if e.stderr:
             print(f"Error output: {e.stderr}")
         return False, e.stderr or "Command failed"
     except Exception as e:
-        print(f"❌ Unexpected error running command: {e}")
+        print(f"[ERROR] Unexpected error running command: {e}")
         return False, str(e)
 
 def cleanup_existing_installation() -> None:
@@ -104,45 +104,45 @@ def check_python_version() -> bool:
         )
         
         if result.returncode != 0:
-            print("❌ Python 3 not found")
+            print("[ERROR] Python 3 not found")
             return False
             
         version_output = result.stdout.strip()
         if not version_output:
-            print("❌ Could not parse Python version")
+            print("[ERROR] Could not parse Python version")
             return False
             
         # Parse version string (e.g., "Python 3.9.7")
         parts = version_output.split()
         if len(parts) < 2:
-            print(f"❌ Invalid version format: {version_output}")
+            print(f"[ERROR] Invalid version format: {version_output}")
             return False
             
         version = parts[1]
         version_parts = version.split('.')
         
         if len(version_parts) < 2:
-            print(f"❌ Invalid version format: {version}")
+            print(f"[ERROR] Invalid version format: {version}")
             return False
             
         major = int(version_parts[0])
         minor = int(version_parts[1])
         
         if major >= 3 and minor >= 7:
-            print(f"✅ Python {version} detected")
+            print(f"[OK] Python {version} detected")
             return True
         else:
-            print(f"❌ Python {version} is too old. Requires Python 3.7+")
+            print(f"[ERROR] Python {version} is too old. Requires Python 3.7+")
             return False
             
     except subprocess.TimeoutExpired:
-        print("❌ Python version check timed out")
+        print("[ERROR] Python version check timed out")
         return False
     except ValueError as e:
-        print(f"❌ Could not parse Python version: {e}")
+        print(f"[ERROR] Could not parse Python version: {e}")
         return False
     except Exception as e:
-        print(f"❌ Could not detect Python version: {e}")
+        print(f"[ERROR] Could not detect Python version: {e}")
         return False
 
 def create_wrapper_script(wrapper_path: str) -> bool:
@@ -156,7 +156,7 @@ def create_wrapper_script(wrapper_path: str) -> bool:
         True if successful, False otherwise
     """
     if not wrapper_path or not isinstance(wrapper_path, str):
-        print("❌ Invalid wrapper path")
+        print("[ERROR] Invalid wrapper path")
         return False
         
     wrapper_script = '''#!/usr/bin/env python3
@@ -192,13 +192,13 @@ if __name__ == '__main__':
         if os.name != 'nt':  # Not Windows
             os.chmod(wrapper_path_obj, 0o755)
             
-        print(f"✅ Created wrapper script: {wrapper_path}")
+        print(f"[OK] Created wrapper script: {wrapper_path}")
         return True
     except PermissionError:
-        print(f"❌ Permission denied creating wrapper script: {wrapper_path}")
+        print(f"[ERROR] Permission denied creating wrapper script: {wrapper_path}")
         return False
     except Exception as e:
-        print(f"❌ Failed to create wrapper script: {e}")
+        print(f"[ERROR] Failed to create wrapper script: {e}")
         return False
 
 def main() -> bool:
@@ -208,12 +208,12 @@ def main() -> bool:
     Returns:
         True if build succeeded, False otherwise
     """
-    print("🔧 Building Spotifydl virtual environment...")
+    print("[BUILD] Building Spotifydl virtual environment...")
     print("=" * 60)
 
     # Check prerequisites
     if not check_python_version():
-        print("\n💡 Please install Python 3.7 or higher and try again.")
+        print("\n[INFO] Please install Python 3.7 or higher and try again.")
         return False
 
     # Clean up existing installation
@@ -242,13 +242,13 @@ def main() -> bool:
             description="Creating virtual environment"
         )
         if not success:
-            print("❌ Failed to create virtual environment")
-            print("💡 Make sure python3-venv is installed (sudo apt install python3-venv on Ubuntu)")
+            print("[ERROR] Failed to create virtual environment")
+            print("[INFO] Make sure python3-venv is installed (sudo apt install python3-venv on Ubuntu)")
             return False
 
         # Verify venv was created
         if not Path(venv_python).exists():
-            print(f"❌ Virtual environment Python not found at: {venv_python}")
+            print(f"[ERROR] Virtual environment Python not found at: {venv_python}")
             return False
 
         # Upgrade pip
@@ -267,8 +267,8 @@ def main() -> bool:
             description="Installing Spotifydl (this may take a few minutes)"
         )
         if not success:
-            print("❌ Failed to install Spotifydl")
-            print("💡 Check your internet connection and try again")
+            print("[ERROR] Failed to install Spotifydl")
+            print("[INFO] Check your internet connection and try again")
             return False
 
         # Install yt-dlp for YouTube downloads
@@ -286,7 +286,7 @@ def main() -> bool:
             )
             if not success:
                 print("⚠️  Warning: yt-dlp installation failed. YouTube downloads may not work.")
-                print("💡 You can manually install yt-dlp with: pip install yt-dlp")
+                print("[INFO] You can manually install yt-dlp with: pip install yt-dlp")
 
         # Create wrapper script
         print("\n📝 Creating wrapper script...")
@@ -308,27 +308,27 @@ def main() -> bool:
         # Verify installation
         print("\n🔍 Verifying installation...")
         if not Path(wrapper_path).exists():
-            print(f"❌ Wrapper script not found at: {wrapper_path}")
+            print(f"[ERROR] Wrapper script not found at: {wrapper_path}")
             return False
         
         if not Path(venv_python).exists():
-            print(f"❌ Python executable not found at: {venv_python}")
+            print(f"[ERROR] Python executable not found at: {venv_python}")
             return False
 
         print("\n" + "=" * 60)
-        print("✅ Virtual environment setup complete!")
+        print("[OK] Virtual environment setup complete!")
         print("=" * 60)
         print(f"   Python executable: {venv_python}")
         print(f"   Wrapper script: {wrapper_path}")
-        print("\n💡 You can now run the app with: npm start")
+        print("\n[INFO] You can now run the app with: npm start")
 
         return True
 
     except KeyboardInterrupt:
-        print("\n\n⏹️  Build interrupted by user")
+        print("\n\n[STOPPED]  Build interrupted by user")
         return False
     except Exception as e:
-        print(f"❌ Unexpected error during build: {e}")
+        print(f"[ERROR] Unexpected error during build: {e}")
         import traceback
         traceback.print_exc()
         return False
@@ -337,16 +337,16 @@ if __name__ == "__main__":
     try:
         success = main()
         if success:
-            print("\n🎉 Build completed successfully!")
+            print("\n[SUCCESS] Build completed successfully!")
             sys.exit(0)
         else:
-            print("\n💥 Build failed. Please check the error messages above.")
+            print("\n[FAILED] Build failed. Please check the error messages above.")
             sys.exit(1)
     except KeyboardInterrupt:
-        print("\n⏹️  Build interrupted by user")
+        print("\n[STOPPED]  Build interrupted by user")
         sys.exit(130)
     except Exception as e:
-        print(f"\n💥 Unexpected error: {e}")
+        print(f"\n[FAILED] Unexpected error: {e}")
         import traceback
         traceback.print_exc()
         sys.exit(1)
