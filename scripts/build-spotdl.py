@@ -55,7 +55,7 @@ def run_command(cmd: str, cwd: Optional[str] = None, description: str = "") -> T
 
 def cleanup_existing_installation() -> None:
     """Clean up any existing spotdl installations."""
-    print("🧹 Cleaning up existing installations...")
+    print("Cleaning up existing installations...")
 
     directories_to_remove = ["spotdl_env", "spotdl-executable"]
     files_to_remove = ["spotdl"]
@@ -68,11 +68,11 @@ def cleanup_existing_installation() -> None:
         if dir_path.exists():
             try:
                 shutil.rmtree(dir_path)
-                print(f"  ✓ Removed directory: {directory}")
+                print(f"  [OK] Removed directory: {directory}")
             except PermissionError:
-                print(f"  ⚠️  Permission denied: {directory}")
+                print(f"  [WARN] Permission denied: {directory}")
             except Exception as e:
-                print(f"  ⚠️  Could not remove {directory}: {e}")
+                print(f"  [WARN] Could not remove {directory}: {e}")
 
     for file in files_to_remove:
         if not file:  # Safety check
@@ -82,11 +82,11 @@ def cleanup_existing_installation() -> None:
         if file_path.exists():
             try:
                 file_path.unlink()
-                print(f"  ✓ Removed file: {file}")
+                print(f"  [OK] Removed file: {file}")
             except PermissionError:
-                print(f"  ⚠️  Permission denied: {file}")
+                print(f"  [WARN] Permission denied: {file}")
             except Exception as e:
-                print(f"  ⚠️  Could not remove {file}: {e}")
+                print(f"  [WARN] Could not remove {file}: {e}")
 
 def check_python_version() -> Tuple[bool, Optional[str]]:
     """
@@ -253,7 +253,7 @@ def main() -> bool:
 
     try:
         # Create virtual environment
-        print("\n📦 Creating virtual environment...")
+        print("\nCreating virtual environment...")
         success, output = run_command(
             f"{python_cmd} -m venv --copies spotdl_env",
             description="Creating virtual environment"
@@ -269,16 +269,16 @@ def main() -> bool:
             return False
 
         # Upgrade pip
-        print("\n📦 Upgrading pip...")
+        print("\nUpgrading pip...")
         success, output = run_command(
             f"{venv_pip} install --upgrade pip",
             description="Upgrading pip"
         )
         if not success:
-            print("⚠️  Warning: Failed to upgrade pip, continuing anyway...")
+            print("[WARN] Failed to upgrade pip, continuing anyway...")
 
         # Install spotdl
-        print("\n📦 Installing Spotifydl...")
+        print("\nInstalling Spotifydl...")
         success, output = run_command(
             f"{venv_pip} install spotdl",
             description="Installing Spotifydl (this may take a few minutes)"
@@ -289,24 +289,24 @@ def main() -> bool:
             return False
 
         # Install yt-dlp for YouTube downloads
-        print("\n📦 Installing yt-dlp...")
+        print("\nInstalling yt-dlp...")
         success, output = run_command(
             f"{venv_pip} install yt-dlp",
             description="Installing yt-dlp for YouTube downloads"
         )
         if not success:
-            print("⚠️  Warning: Failed to install yt-dlp via pip, trying system installation...")
+            print("[WARN] Failed to install yt-dlp via pip, trying system installation...")
             # Try system installation as fallback
             success, output = run_command(
                 "pip3 install yt-dlp --user",
                 description="Installing yt-dlp system-wide as fallback"
             )
             if not success:
-                print("⚠️  Warning: yt-dlp installation failed. YouTube downloads may not work.")
+                print("[WARN] yt-dlp installation failed. YouTube downloads may not work.")
                 print("[INFO] You can manually install yt-dlp with: pip install yt-dlp")
 
         # Create wrapper script
-        print("\n📝 Creating wrapper script...")
+        print("\nCreating wrapper script...")
         if not create_wrapper_script(wrapper_path):
             return False
 
@@ -318,12 +318,12 @@ def main() -> bool:
             try:
                 if os.name != 'nt':  # Unix-like systems
                     os.symlink("python3", python_link)
-                    print(f"  ✓ Created python symlink for compatibility")
+                    print(f"  [OK] Created python symlink for compatibility")
             except Exception as e:
-                print(f"  ⚠️  Could not create python symlink (non-critical): {e}")
+                print(f"  [WARN] Could not create python symlink (non-critical): {e}")
 
         # Verify installation
-        print("\n🔍 Verifying installation...")
+        print("\nVerifying installation...")
         if not Path(wrapper_path).exists():
             print(f"[ERROR] Wrapper script not found at: {wrapper_path}")
             return False
@@ -342,7 +342,7 @@ def main() -> bool:
         return True
 
     except KeyboardInterrupt:
-        print("\n\n[STOPPED]  Build interrupted by user")
+        print("\n\n[STOPPED] Build interrupted by user")
         return False
     except Exception as e:
         print(f"[ERROR] Unexpected error during build: {e}")
