@@ -108,7 +108,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         } catch (error) {
             console.error('Error updating download links:', error);
-            mainDownloadBtn.href = 'https://github.com/idohaber/EasyMusic/releases/latest';
+            mainDownloadBtn.href = 'https://github.com/idossha/EasyMusic/releases/latest';
             mainDownloadBtn.target = '_blank';
         } finally {
             // Restore button state

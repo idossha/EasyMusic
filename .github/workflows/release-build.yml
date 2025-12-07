@@ -79,9 +79,13 @@ jobs:
         run: |
           npm ci
 
+      - name: Install Python venv (macOS)
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install virtualenv
+
       - name: Build spotdl
         run: npm run build-spotdl
-        continue-on-error: true
 
       - name: Build and Sign
         env:
@@ -90,7 +94,6 @@ jobs:
           CSC_LINK: ${{ secrets.CSC_LINK }}
           CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
         run: npx electron-builder --mac --${{ matrix.arch }} --publish never
-        continue-on-error: true
 
       - name: Verify Code Signature
         run: |
@@ -139,13 +142,11 @@ jobs:
 
       - name: Build spotdl
         run: npm run build-spotdl
-        continue-on-error: true
 
       - name: Build Electron app
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx electron-builder --win --x64 --publish never
-        continue-on-error: true
 
       - name: Upload Windows artifacts
         if: always()
@@ -180,15 +181,18 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Install Python venv (Linux)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-venv python3-pip
+
       - name: Build spotdl
         run: npm run build-spotdl
-        continue-on-error: true
 
       - name: Build Electron app
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx electron-builder --linux --x64 --publish never
-        continue-on-error: true
 
       - name: Upload Linux artifacts
         if: always()

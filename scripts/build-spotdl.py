@@ -213,15 +213,41 @@ if __name__ == '__main__':
         print(f"[ERROR] Failed to create wrapper script: {e}")
         return False
 
+def check_ci_environment() -> None:
+    """Check if we're running in a CI environment and log relevant info."""
+    import os
+
+    ci_vars = ['CI', 'GITHUB_ACTIONS', 'GITLAB_CI', 'TRAVIS', 'JENKINS_HOME']
+    is_ci = any(os.environ.get(var) for var in ci_vars)
+
+    if is_ci:
+        print("[INFO] Running in CI environment")
+        print(f"[INFO] Python path: {sys.executable}")
+        print(f"[INFO] Current working directory: {os.getcwd()}")
+        print(f"[INFO] Platform: {sys.platform}")
+
+        # Check if we're in a container or VM
+        try:
+            with open('/proc/1/cgroup', 'r') as f:
+                if 'docker' in f.read().lower():
+                    print("[INFO] Running in Docker container")
+        except:
+            pass
+    else:
+        print("[INFO] Running in local environment")
+
 def main() -> bool:
     """
     Main build function.
-    
+
     Returns:
         True if build succeeded, False otherwise
     """
     print("[BUILD] Building Spotifydl virtual environment...")
     print("=" * 60)
+
+    # Check CI environment
+    check_ci_environment()
 
     # Check prerequisites
     python_check_result = check_python_version()
@@ -253,13 +279,32 @@ def main() -> bool:
     try:
         # Create virtual environment
         print("\nCreating virtual environment...")
-        success, output = run_command(
+        venv_created = False
+
+        # Try different venv creation methods
+        venv_commands = [
             f"{python_cmd} -m venv --copies spotdl_env",
-            description="Creating virtual environment"
-        )
-        if not success:
-            print("[ERROR] Failed to create virtual environment")
-            print("[INFO] Make sure python3-venv is installed (sudo apt install python3-venv on Ubuntu)")
+            f"{python_cmd} -m virtualenv spotdl_env",
+            f"virtualenv spotdl_env"  # System virtualenv as fallback
+        ]
+
+        for i, cmd in enumerate(venv_commands):
+            success, output = run_command(
+                cmd,
+                description=f"Creating virtual environment (method {i+1}/{len(venv_commands)})"
+            )
+            if success:
+                venv_created = True
+                break
+            else:
+                print(f"[WARN] Method {i+1} failed: {output}")
+
+        if not venv_created:
+            print("[ERROR] Failed to create virtual environment with any method")
+            print("[INFO] Make sure python3-venv or virtualenv is installed")
+            print("  Ubuntu/Debian: sudo apt install python3-venv")
+            print("  CentOS/RHEL: sudo yum install python3-virtualenv")
+            print("  macOS: pip3 install virtualenv")
             return False
 
         # Verify venv was created
@@ -275,16 +320,40 @@ def main() -> bool:
         )
         if not success:
             print("[WARN] Failed to upgrade pip, continuing anyway...")
+            # Try alternative pip upgrade method
+            success, output = run_command(
+                f"{venv_python} -m pip install --upgrade pip",
+                description="Alternative pip upgrade"
+            )
+            if not success:
+                print("[WARN] Alternative pip upgrade also failed, continuing...")
 
-        # Install spotdl
+        # Install spotdl with retry logic
         print("\nInstalling Spotifydl...")
-        success, output = run_command(
-            f"{venv_pip} install spotdl",
-            description="Installing Spotifydl (this may take a few minutes)"
-        )
-        if not success:
-            print("[ERROR] Failed to install Spotifydl")
-            print("[INFO] Check your internet connection and try again")
+        max_retries = 3
+        spotdl_installed = False
+
+        for attempt in range(max_retries):
+            print(f"  Attempt {attempt + 1}/{max_retries}...")
+            success, output = run_command(
+                f"{venv_pip} install spotdl",
+                description=f"Installing Spotifydl (attempt {attempt + 1}/{max_retries})",
+                cwd=None  # Don't specify cwd for pip installs
+            )
+            if success:
+                spotdl_installed = True
+                break
+            else:
+                if attempt < max_retries - 1:
+                    print(f"  [WARN] Attempt {attempt + 1} failed, retrying in 5 seconds...")
+                    import time
+                    time.sleep(5)
+                else:
+                    print("[ERROR] Failed to install Spotifydl after all retries")
+                    print("[INFO] Check your internet connection and try again")
+                    print(f"[DEBUG] Last error: {output}")
+
+        if not spotdl_installed:
             return False
 
         # Install yt-dlp for YouTube downloads
@@ -294,15 +363,28 @@ def main() -> bool:
             description="Installing yt-dlp for YouTube downloads"
         )
         if not success:
-            print("[WARN] Failed to install yt-dlp via pip, trying system installation...")
+            print("[WARN] Failed to install yt-dlp via venv pip, trying alternative methods...")
+            # Try alternative installation methods
+            alt_success = False
+
+            # Try with python -m pip
+            if not alt_success:
+                alt_success, alt_output = run_command(
+                    f"{venv_python} -m pip install yt-dlp",
+                    description="Installing yt-dlp via python -m pip"
+                )
+
             # Try system installation as fallback
-            success, output = run_command(
-                "pip3 install yt-dlp --user",
-                description="Installing yt-dlp system-wide as fallback"
-            )
-            if not success:
+            if not alt_success:
+                alt_success, alt_output = run_command(
+                    "pip3 install yt-dlp --user",
+                    description="Installing yt-dlp system-wide as fallback"
+                )
+
+            if not alt_success:
                 print("[WARN] yt-dlp installation failed. YouTube downloads may not work.")
                 print("[INFO] You can manually install yt-dlp with: pip install yt-dlp")
+                print(f"[DEBUG] Last error: {alt_output}")
 
         # Create wrapper script
         print("\nCreating wrapper script...")
