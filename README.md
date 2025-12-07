@@ -10,7 +10,7 @@ A simple Electron app for downloading music from Spotify using the spotdl Python
 - **High-quality downloads** - 320kbps MP3 files
 - **Multiple formats** - Tracks, albums, and playlists
 - **Real-time progress** - Live download tracking
-- **Cross-platform** - Windows, macOS, Linux
+- **Cross-platform** - Windows, macOS (Apple Silicon), Linux
 
 ## Quick Start
 
@@ -62,9 +62,9 @@ npm run download-ffmpeg
 └── package.json     # Dependencies & scripts
 ```
 
-## macOS Installation
+## macOS (Apple Silicon) Installation
 
-**Important:** EasyMusic is code-signed but not notarized by Apple. When you first run the app, macOS will block it for security reasons. You must explicitly allow it in System Settings.
+**Important:** EasyMusic is code-signed but not notarized by Apple. When you first run the app on Apple Silicon Macs, macOS will block it for security reasons. You must explicitly allow it in System Settings.
 
 ### First-Time Setup
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Script to find all Python binaries that need code signing for macOS builds.
+Script to find all Python binaries that need code signing for Apple Silicon macOS builds.
 Generates a list of binaries in spotdl_env and binaries directories that should be signed.
 """
 

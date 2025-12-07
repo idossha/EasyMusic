@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 osName = 'Download for Windows';
                 break;
             case 'macos':
-                osName = 'Download for macOS';
+                osName = 'Download for macOS (Silicon)';
                 break;
             case 'linux':
                 osName = 'Download for Linux';

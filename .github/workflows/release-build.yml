@@ -58,8 +58,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - arch: x64
-            name: macOS-Intel
           - arch: arm64
             name: macOS-Silicon
 
@@ -208,13 +206,6 @@ jobs:
 
       - name: Display structure of downloaded files
         run: ls -R artifacts
-
-      - name: Upload macOS Intel DMG to release
-        uses: softprops/action-gh-release@v1
-        with:
-          files: artifacts/macOS-Intel-dmg/*
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload macOS Silicon DMG to release
         uses: softprops/action-gh-release@v1

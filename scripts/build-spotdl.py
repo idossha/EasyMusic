@@ -88,54 +88,55 @@ def cleanup_existing_installation() -> None:
             except Exception as e:
                 print(f"  ⚠️  Could not remove {file}: {e}")
 
-def check_python_version() -> bool:
+def check_python_version() -> Tuple[bool, Optional[str]]:
     """
     Check if Python 3.10+ is available.
 
     Returns:
-        True if Python 3.10+ is available, False otherwise
+        Tuple of (success: bool, python_command: str or None)
     """
     try:
-        # Try python3.11 first, then python3.10
-        python_cmd = "python3.11"
-        result = subprocess.run(
-            [python_cmd, "--version"],
-            capture_output=True,
-            text=True,
-            timeout=5
-        )
+        # Try python first (works on Windows and some Unix systems), then python3.11, then python3.10
+        python_cmds = ["python", "python3.11", "python3.10"]
 
-        if result.returncode != 0:
-            # Fallback to python3.10
-            python_cmd = "python3.10"
-            result = subprocess.run(
-                [python_cmd, "--version"],
-                capture_output=True,
-                text=True,
-                timeout=5
-            )
+        result = None
+        python_cmd = None
 
-        if result.returncode != 0:
+        for cmd in python_cmds:
+            try:
+                result = subprocess.run(
+                    [cmd, "--version"],
+                    capture_output=True,
+                    text=True,
+                    timeout=5
+                )
+                if result.returncode == 0:
+                    python_cmd = cmd
+                    break
+            except (subprocess.CalledProcessError, FileNotFoundError):
+                continue
+
+        if result is None or result.returncode != 0:
             print("[ERROR] Python 3.10+ not found")
-            return False
+            return False, None
 
         version_output = result.stdout.strip()
         if not version_output:
             print("[ERROR] Could not parse Python version")
-            return False
+            return False, None
 
         # Parse version string (e.g., "Python 3.11.13")
         parts = version_output.split()
         if len(parts) < 2:
             print(f"[ERROR] Invalid version format: {version_output}")
-            return False
+            return False, None
 
         version = parts[1]
         version_parts = version.split('.')
 
         if len(version_parts) < 2:
             print(f"[ERROR] Invalid version format: {version}")
-            return False
+            return False, None
 
         major = int(version_parts[0])
         minor = int(version_parts[1])

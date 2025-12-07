@@ -85,7 +85,8 @@ function getFfmpegPath() {
   // Determine the correct binary directory based on platform and architecture
   let binaryDir;
   if (platform === 'darwin') {
-    binaryDir = arch === 'arm64' ? 'darwin-arm64' : 'darwin-x64';
+    // Only Apple Silicon (arm64) is supported for macOS
+    binaryDir = 'darwin-arm64';
   } else if (platform === 'win32') {
     binaryDir = arch === 'x64' ? 'win32-x64' : 'win32-ia32';
   } else {
