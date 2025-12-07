@@ -2,7 +2,7 @@
 
 A simple Electron app for downloading music from Spotify using the spotdl Python library.
 
-📖 **[View Documentation](https://idohaber.github.io/EasyMusic/)**
+📖 **[View Documentation](https://idossha.github.io/EasyMusic/)**
 
 ## Features
 
