@@ -17,7 +17,38 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function updateDownloadLinks(selectedOs = null) {
+    async function fetchLatestRelease() {
+        try {
+            const response = await fetch('https://api.github.com/repos/idohaber/EasyMusic/releases/latest');
+            if (!response.ok) {
+                throw new Error(`GitHub API error: ${response.status}`);
+            }
+            return await response.json();
+        } catch (error) {
+            console.error('Failed to fetch latest release:', error);
+            return null;
+        }
+    }
+
+    function findDownloadUrl(release, os) {
+        if (!release || !release.assets) return null;
+
+        // Define patterns for different OS artefacts
+        const patterns = {
+            windows: /\.exe$/i,
+            macos: /\.dmg$/i,
+            linux: /\.(?:AppImage|deb)$/i
+        };
+
+        const pattern = patterns[os];
+        if (!pattern) return null;
+
+        // Find the matching asset
+        const asset = release.assets.find(asset => pattern.test(asset.name));
+        return asset ? asset.browser_download_url : null;
+    }
+
+    async function updateDownloadLinks(selectedOs = null) {
         const detectedOs = detectOS();
         const os = selectedOs || detectedOs;
         const mainDownloadBtn = document.getElementById('mainDownloadBtn');
@@ -50,8 +81,40 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        // Main download button always points to latest release (will auto-detect OS on GitHub)
-        mainDownloadBtn.href = 'https://github.com/idohaber/EasyMusic/releases/latest';
+        // Show loading state
+        mainDownloadBtn.style.pointerEvents = 'none';
+        mainDownloadBtn.style.opacity = '0.7';
+
+        try {
+            // Fetch latest release and set direct download link
+            const release = await fetchLatestRelease();
+            if (release) {
+                const downloadUrl = findDownloadUrl(release, os);
+                if (downloadUrl) {
+                    mainDownloadBtn.href = downloadUrl;
+                    mainDownloadBtn.target = '_blank';
+                    console.log(`Download URL set for ${os}: ${downloadUrl}`);
+                } else {
+                    // Fallback to releases page if specific asset not found
+                    mainDownloadBtn.href = 'https://github.com/idohaber/EasyMusic/releases/latest';
+                    mainDownloadBtn.target = '_blank';
+                    console.warn(`No download URL found for ${os}, falling back to releases page`);
+                }
+            } else {
+                // Fallback to releases page if API fails
+                mainDownloadBtn.href = 'https://github.com/idohaber/EasyMusic/releases/latest';
+                mainDownloadBtn.target = '_blank';
+                console.warn('Failed to fetch release data, falling back to releases page');
+            }
+        } catch (error) {
+            console.error('Error updating download links:', error);
+            mainDownloadBtn.href = 'https://github.com/idohaber/EasyMusic/releases/latest';
+            mainDownloadBtn.target = '_blank';
+        } finally {
+            // Restore button state
+            mainDownloadBtn.style.pointerEvents = '';
+            mainDownloadBtn.style.opacity = '';
+        }
     }
 
     // Initialize download links
