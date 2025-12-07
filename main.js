@@ -105,38 +105,38 @@ function getFfmpegPath() {
 }
 
 /**
- * Gets the paths for the spotdl virtual environment
- * @returns {Object} Object containing venvPython and wrapperScript paths
+ * Gets the path to the spotdl executable
+ * @returns {string} Path to the spotdl executable
  */
-function getSpotdlPaths() {
+function getSpotdlPath() {
   const fsSync = require('fs');
   const basePath = getBasePath();
-  const venvDir = path.join(basePath, CONSTANTS.SPOTDL_ENV_DIR, 'bin');
+  const platform = process.platform;
 
-  // Try python3 first (common on macOS/Linux), then python
-  let venvPython = path.join(venvDir, 'python3');
-  if (!fsSync.existsSync(venvPython)) {
-    venvPython = path.join(venvDir, 'python');
+  // Determine the executable name based on platform
+  const executableName = platform === 'win32' ? 'spotdl.exe' : 'spotdl';
+  const spotdlPath = path.join(basePath, 'binaries', 'spotdl', executableName);
+
+  // Check if the executable exists
+  if (fsSync.existsSync(spotdlPath)) {
+    return spotdlPath;
   }
 
-  const wrapperScript = path.join(basePath, CONSTANTS.SPOTDL_ENV_DIR, 'spotdl_wrapper.py');
-  return { venvPython, wrapperScript };
+  // Fallback to system spotdl if available
+  return 'spotdl';
 }
 
 /**
- * Checks if spotdl is available in the virtual environment
+ * Checks if spotdl executable is available
  * @returns {Promise<boolean>} True if spotdl is available and working
  */
 async function checkSpotifydl() {
   try {
-    const { venvPython, wrapperScript } = getSpotdlPaths();
+    const spotdlPath = getSpotdlPath();
 
-    // Check if virtual environment files exist
+    // Check if executable exists
     const fsSync = require('fs');
-    const venvExists = fsSync.existsSync(venvPython);
-    const wrapperExists = fsSync.existsSync(wrapperScript);
-
-    if (!venvExists || !wrapperExists) {
+    if (!fsSync.existsSync(spotdlPath)) {
       return false;
     }
 
@@ -163,7 +163,7 @@ async function checkSpotifydl() {
       };
 
       try {
-        testProcess = spawn(venvPython, [wrapperScript, '--help'], {
+        testProcess = spawn(spotdlPath, ['--help'], {
           stdio: ['ignore', 'ignore', 'ignore']
         });
 
@@ -448,7 +448,7 @@ async function downloadMusic(spotifyUrl, outputFolder = null) {
   const downloadsDir = await ensureDownloadDirectory(outputFolder);
 
   return new Promise((resolve, reject) => {
-    const { venvPython, wrapperScript } = getSpotdlPaths();
+    const spotdlPath = getSpotdlPath();
 
     // Prepare spotdl command arguments
     const ffmpegPath = getFfmpegPath();
@@ -476,7 +476,7 @@ async function downloadMusic(spotifyUrl, outputFolder = null) {
     let spotdlProcess;
     try {
       // Spawn the spotdl process
-      spotdlProcess = spawn(venvPython, [wrapperScript, ...args], {
+      spotdlProcess = spawn(spotdlPath, args, {
         cwd: downloadsDir,
         stdio: ['ignore', 'pipe', 'pipe']
       });
@@ -603,56 +603,12 @@ async function downloadMusic(spotifyUrl, outputFolder = null) {
 }
 
 /**
- * Gets the paths for yt-dlp in the virtual environment
- * @returns {Object} Object containing ytdlpPath
- */
-function getYtdlpPaths() {
-  const fsSync = require('fs');
-  const basePath = getBasePath();
-  const venvDir = path.join(basePath, CONSTANTS.SPOTDL_ENV_DIR, 'bin');
-
-  // Check if yt-dlp is in the virtual environment
-  let ytdlpPath = path.join(venvDir, 'yt-dlp');
-  if (!fsSync.existsSync(ytdlpPath)) {
-    // Try system-wide yt-dlp
-    ytdlpPath = 'yt-dlp';
-  }
-
-  return { ytdlpPath };
-}
-
-/**
- * Checks if yt-dlp is available (in venv or system-wide)
- * @returns {Promise<boolean>} True if yt-dlp is available
+ * Checks if YouTube download is available (via spotdl)
+ * @returns {Promise<boolean>} True if YouTube download is available
  */
 async function checkYtdlp() {
-  try {
-    const { ytdlpPath } = getYtdlpPaths();
-
-    return new Promise((resolve) => {
-      const ytProcess = spawn(ytdlpPath, ['--version'], {
-        stdio: 'pipe',
-        timeout: CONSTANTS.SPOTDL_CHECK_TIMEOUT
-      });
-
-      let hasOutput = false;
-
-      ytProcess.stdout.on('data', () => {
-        hasOutput = true;
-      });
-
-      ytProcess.on('close', (code) => {
-        resolve(code === 0 && hasOutput);
-      });
-
-      ytProcess.on('error', () => {
-        resolve(false);
-      });
-    });
-  } catch (error) {
-    console.error('Error checking yt-dlp:', error);
-    return false;
-  }
+  // YouTube downloads now use the same spotdl executable
+  return await checkSpotifydl();
 }
 
 /**
@@ -673,7 +629,7 @@ function isValidYoutubeUrl(url) {
 }
 
 /**
- * Downloads music from YouTube using yt-dlp
+ * Downloads music from YouTube using spotdl
  * @param {string} youtubeUrl - The YouTube URL to download
  * @param {string} outputFolder - The output folder path (optional)
  * @returns {Promise<Object>} Download result with success status and files
@@ -694,29 +650,26 @@ async function downloadYoutube(youtubeUrl, outputFolder = null) {
   const downloadsDir = await ensureDownloadDirectory(outputFolder);
 
   return new Promise((resolve, reject) => {
-    const { ytdlpPath } = getYtdlpPaths();
-    const outputTemplate = path.join(downloadsDir, CONSTANTS.YTDLP_ARGS.OUTPUT_TEMPLATE);
+    const spotdlPath = getSpotdlPath();
     const ffmpegPath = getFfmpegPath();
 
-    // Prepare yt-dlp command arguments
+    // Prepare spotdl command arguments for YouTube download
     const args = [
+      CONSTANTS.SPOTDL_ARGS.COMMAND,
       youtubeUrl,
-      '--extract-audio',
-      '--audio-format', CONSTANTS.YTDLP_ARGS.AUDIO_FORMAT,
-      '--audio-quality', CONSTANTS.YTDLP_ARGS.AUDIO_QUALITY,
-      '--output', outputTemplate,
-      '--no-playlist',
-      '--retries', CONSTANTS.YTDLP_ARGS.MAX_RETRIES,
-      '--progress',
-      '--newline',
-      '--ffmpeg-location', ffmpegPath,
-      '--extractor-args', 'youtube:player_client=default'
+      '--output', downloadsDir,
+      '--format', CONSTANTS.SPOTDL_ARGS.FORMAT,
+      '--bitrate', CONSTANTS.SPOTDL_ARGS.BITRATE,
+      '--threads', CONSTANTS.SPOTDL_ARGS.THREADS,
+      '--max-retries', CONSTANTS.SPOTDL_ARGS.MAX_RETRIES,
+      '--ffmpeg', ffmpegPath,
+      '--audio', 'youtube'  // Explicitly use YouTube as audio source
     ];
 
-    console.log('Starting yt-dlp with args:', args.join(' '));
+    console.log('Starting YouTube download via spotdl:', spotdlPath, args.join(' '));
 
-    // Start yt-dlp process
-    activeProcess = spawn(ytdlpPath, args, {
+    // Start spotdl process
+    activeProcess = spawn(spotdlPath, args, {
       stdio: ['pipe', 'pipe', 'pipe'],
       cwd: downloadsDir
     });
@@ -750,37 +703,37 @@ async function downloadYoutube(youtubeUrl, outputFolder = null) {
       }
     };
 
-    // Handle stdout
+    // Handle stdout (using same parsing as Spotify downloads)
     activeProcess.stdout.on('data', (data) => {
       const output = data.toString();
       outputBuffer += output;
 
-      // Parse progress information
+      // Parse output for better progress tracking
       const lines = output.split('\n').filter(line => line.trim());
       for (const line of lines) {
-        // Look for download progress
-        if (line.includes('[download]') && line.includes('%')) {
-          const progressMatch = line.match(/(\d+(?:\.\d+)?)%/);
-          if (progressMatch) {
-            const progress = parseFloat(progressMatch[1]);
-            currentTrackName = 'Downloading...';
-            sendProgress(`Downloading: ${progress.toFixed(1)}% complete\n`);
-          }
+        // Detect track count
+        const trackCount = parseTrackCount(line);
+        if (trackCount !== null) {
+          currentTrackCount = trackCount;
+          sendProgress(`Detected ${currentTrackCount} track(s).\n`);
         }
 
-        // Look for destination filename
-        if (line.includes('[download] Destination:')) {
-          const filenameMatch = line.match(/Destination:\s*(.+)/);
-          if (filenameMatch) {
-            currentTrackName = filenameMatch[1].trim();
-            sendProgress(`Downloading: ${currentTrackName}\n`);
-          }
+        // Detect download progress
+        const downloadMatch = parseDownloadProgress(line);
+        if (downloadMatch) {
+          downloadedTracks++;
+          currentTrackName = downloadMatch;
+          sendProgress(`${CONSTANTS.LOG_DOWNLOADING} ${downloadMatch}\n`);
         }
 
-        // Look for completion
-        if (line.includes('[ExtractAudio]') && line.includes('has already been downloaded')) {
-          sendProgress(`✓ Already downloaded: ${currentTrackName}\n`);
+        // Detect completion
+        const completionMatch = parseDownloadCompletion(line);
+        if (completionMatch) {
+          sendProgress(`${CONSTANTS.LOG_FINISHED} ${completionMatch}\n`);
         }
+
+        // Send all output to UI
+        sendProgress(line + '\n');
       }
     });
 

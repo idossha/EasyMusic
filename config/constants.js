@@ -42,7 +42,6 @@ const CONSTANTS = {
   MUSIC_EXTENSIONS: ['.mp3', '.flac', '.m4a', '.wav', '.ogg'],
 
   // Directory names
-  SPOTDL_ENV_DIR: 'spotdl_env',
   DOWNLOADS_DIR: 'downloads',
 
   // Download modes

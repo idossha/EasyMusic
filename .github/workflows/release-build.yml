@@ -79,10 +79,10 @@ jobs:
         run: |
           npm ci
 
-      - name: Install Python venv (macOS)
+      - name: Install PyInstaller dependencies (macOS)
         run: |
           python3 -m pip install --upgrade pip
-          python3 -m pip install virtualenv
+          python3 -m pip install pyinstaller
 
       - name: Build spotdl
         run: npm run build-spotdl
@@ -140,10 +140,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install Python venv (Linux)
+      - name: Install PyInstaller dependencies (Linux)
         run: |
           sudo apt-get update
-          sudo apt-get install -y python3-venv python3-pip
+          sudo apt-get install -y python3-pip
+          python3 -m pip install --upgrade pip
+          python3 -m pip install pyinstaller
 
       - name: Build spotdl
         run: npm run build-spotdl

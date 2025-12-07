@@ -15,7 +15,7 @@ A simple Electron app for downloading music from Spotify using the spotdl Python
 ## Quick Start
 
 ### Prerequisites
-- Node.js 14+ and Python 3.7+
+- Node.js 14+ and Python 3.10+
 
 ### Setup & Run
 ```bash
@@ -23,6 +23,8 @@ npm install
 npm run build-spotdl
 npm run dev
 ```
+
+The `build-spotdl` script will automatically build a standalone spotdl executable using PyInstaller.
 
 ### Build for Production
 ```bash
@@ -58,7 +60,7 @@ npm run download-ffmpeg
 ├── config/
 │   └── constants.js # Configuration
 ├── scripts/
-│   └── build-spotdl.py # Python environment setup
+│   └── build-spotdl-pyinstaller.py # Spotdl executable builder
 └── package.json     # Dependencies & scripts
 ```
 
@@ -94,7 +96,7 @@ sudo spctl --master-enable
 
 - **"Downloader not available"**: Run `npm run build-spotdl`
 - **Download fails**: Check URL, internet, and disk space
-- **Build issues**: Ensure Python venv is available
+- **Build issues**: Ensure Python 3.10+ is installed
 - **FFmpeg errors**: FFmpeg is automatically bundled with the app. For development, run `npm run download-ffmpeg`
 - **macOS "App cannot be opened"**: See the macOS Installation section above
 
