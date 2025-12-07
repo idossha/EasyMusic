@@ -254,7 +254,7 @@ def main() -> bool:
         # Create virtual environment
         print("\n📦 Creating virtual environment...")
         success, output = run_command(
-            f"{python_cmd} -m venv spotdl_env",
+            f"{python_cmd} -m venv --copies spotdl_env",
             description="Creating virtual environment"
         )
         if not success:
