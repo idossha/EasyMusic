@@ -117,47 +117,6 @@ jobs:
             dist/*.dmg.blockmap
           retention-days: 5
 
-  build-windows:
-    name: Build Windows
-    needs: create-release
-    runs-on: windows-latest
-    timeout-minutes: 30
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build spotdl
-        run: npm run build-spotdl
-
-      - name: Build Electron app
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx electron-builder --win --x64 --publish never
-
-      - name: Upload Windows artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: Windows
-          path: |
-            dist/*.exe
-            dist/*.exe.blockmap
-          retention-days: 5
-
   build-linux:
     name: Build Linux
     needs: create-release
@@ -206,7 +165,7 @@ jobs:
 
   release:
     name: Upload to Release
-    needs: [create-release, build-mac, build-windows, build-linux]
+    needs: [create-release, build-mac, build-linux]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -225,14 +184,6 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: artifacts/macOS-Silicon-dmg/*
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload Windows to release
-        if: hashFiles('artifacts/Windows/*') != ''
-        uses: softprops/action-gh-release@v1
-        with:
-          files: artifacts/Windows/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
