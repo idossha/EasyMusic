@@ -60,12 +60,41 @@ npm run download-ffmpeg
 └── package.json     # Dependencies & scripts
 ```
 
+## macOS Installation
+
+**Important:** EasyMusic is code-signed but not notarized by Apple. When you first run the app, macOS will block it for security reasons. You must explicitly allow it in System Settings.
+
+### First-Time Setup
+
+1. Download the `.dmg` file from the releases page
+2. Double-click the `.dmg` file to mount it
+3. **Don't double-click the app icon directly** - this will trigger the security block
+4. Instead, **right-click** on the EasyMusic app icon
+5. Select "Open" from the context menu
+6. In the security dialog that appears, click "Open" again
+7. The app will now run normally and be trusted for future launches
+
+### Alternative: Disable Gatekeeper Temporarily
+
+If you prefer, you can temporarily disable macOS Gatekeeper:
+
+```bash
+# Disable Gatekeeper
+sudo spctl --master-disable
+
+# After installing and running EasyMusic, re-enable Gatekeeper
+sudo spctl --master-enable
+```
+
+**Security Note:** Only disable Gatekeeper if you trust the source. Re-enable it immediately after installation.
+
 ## Troubleshooting
 
 - **"Downloader not available"**: Run `npm run build-spotdl`
 - **Download fails**: Check URL, internet, and disk space
 - **Build issues**: Ensure Python venv is available
 - **FFmpeg errors**: FFmpeg is automatically bundled with the app. For development, run `npm run download-ffmpeg`
+- **macOS "App cannot be opened"**: See the macOS Installation section above
 
 ## Disclaimer
 

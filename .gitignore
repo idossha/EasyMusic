@@ -5,7 +5,6 @@ node_modules/
 dist/
 build/*
 !build/entitlements.mac.plist
-!build/notarize.js
 out/
 
 # Python
@@ -41,7 +40,7 @@ yarn-error.log*
 .env.local
 .env.*.local
 
-# Build secrets (Apple notarization credentials)
+# Build secrets
 build-secrets.sh
 
 # Electron build artifacts

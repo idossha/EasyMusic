@@ -80,24 +80,27 @@ jobs:
       - name: Install dependencies
         run: |
           npm ci
-          npm install --save-dev electron-builder@latest @electron/notarize@latest
 
       - name: Build spotdl
         run: npm run build-spotdl
 
-      - name: Build, Sign, and Notarize
+      - name: Find binaries to sign
+        run: python3 scripts/find-binaries.py
+
+      - name: Sign Python binaries
+        env:
+          CSC_NAME: ${{ secrets.CSC_NAME }}
+        run: bash scripts/sign-binaries.sh
+
+      - name: Build and Sign
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Code signing
           CSC_LINK: ${{ secrets.CSC_LINK }}
           CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
-          # Notarization
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: npx electron-builder --mac --${{ matrix.arch }} --publish never
 
-      - name: Verify Code Signature and Notarization
+      - name: Verify Code Signature
         run: |
           echo "=== Verifying Code Signature ==="
           APP_PATH=$(find dist -name "*.app" -type d | head -1)
@@ -107,9 +110,6 @@ jobs:
             echo ""
             echo "=== Verifying Gatekeeper Assessment ==="
             spctl -a -vvv -t install "$APP_PATH" 2>&1 || true
-            echo ""
-            echo "=== Checking Notarization Staple ==="
-            stapler validate "$APP_PATH" 2>&1 || true
           fi
 
       - name: Upload macOS DMG artifacts

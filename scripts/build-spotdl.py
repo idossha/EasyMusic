@@ -90,60 +90,72 @@ def cleanup_existing_installation() -> None:
 
 def check_python_version() -> bool:
     """
-    Check if Python 3.7+ is available.
-    
+    Check if Python 3.10+ is available.
+
     Returns:
-        True if Python 3.7+ is available, False otherwise
+        True if Python 3.10+ is available, False otherwise
     """
     try:
+        # Try python3.11 first, then python3.10
+        python_cmd = "python3.11"
         result = subprocess.run(
-            ["python3", "--version"],
+            [python_cmd, "--version"],
             capture_output=True,
             text=True,
             timeout=5
         )
-        
+
         if result.returncode != 0:
-            print("[ERROR] Python 3 not found")
+            # Fallback to python3.10
+            python_cmd = "python3.10"
+            result = subprocess.run(
+                [python_cmd, "--version"],
+                capture_output=True,
+                text=True,
+                timeout=5
+            )
+
+        if result.returncode != 0:
+            print("[ERROR] Python 3.10+ not found")
             return False
-            
+
         version_output = result.stdout.strip()
         if not version_output:
             print("[ERROR] Could not parse Python version")
             return False
-            
-        # Parse version string (e.g., "Python 3.9.7")
+
+        # Parse version string (e.g., "Python 3.11.13")
         parts = version_output.split()
         if len(parts) < 2:
             print(f"[ERROR] Invalid version format: {version_output}")
             return False
-            
+
         version = parts[1]
         version_parts = version.split('.')
-        
+
         if len(version_parts) < 2:
             print(f"[ERROR] Invalid version format: {version}")
             return False
-            
+
         major = int(version_parts[0])
         minor = int(version_parts[1])
-        
-        if major >= 3 and minor >= 7:
-            print(f"[OK] Python {version} detected")
-            return True
+
+        if major >= 3 and minor >= 10:
+            print(f"[OK] Python {version} detected ({python_cmd})")
+            return True, python_cmd
         else:
-            print(f"[ERROR] Python {version} is too old. Requires Python 3.7+")
-            return False
-            
+            print(f"[ERROR] Python {version} is too old. Requires Python 3.10+")
+            return False, None
+
     except subprocess.TimeoutExpired:
         print("[ERROR] Python version check timed out")
-        return False
+        return False, None
     except ValueError as e:
         print(f"[ERROR] Could not parse Python version: {e}")
-        return False
+        return False, None
     except Exception as e:
         print(f"[ERROR] Could not detect Python version: {e}")
-        return False
+        return False, None
 
 def create_wrapper_script(wrapper_path: str) -> bool:
     """
@@ -212,9 +224,13 @@ def main() -> bool:
     print("=" * 60)
 
     # Check prerequisites
-    if not check_python_version():
-        print("\n[INFO] Please install Python 3.7 or higher and try again.")
+    python_check_result = check_python_version()
+    if not python_check_result[0]:
+        print("\n[INFO] Please install Python 3.10 or higher and try again.")
         return False
+
+    python_cmd = python_check_result[1]
+    print(f"[INFO] Using Python: {python_cmd}")
 
     # Clean up existing installation
     cleanup_existing_installation()
@@ -238,7 +254,7 @@ def main() -> bool:
         # Create virtual environment
         print("\n📦 Creating virtual environment...")
         success, output = run_command(
-            "python3 -m venv spotdl_env",
+            f"{python_cmd} -m venv spotdl_env",
             description="Creating virtual environment"
         )
         if not success:
