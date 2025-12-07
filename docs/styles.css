@@ -550,6 +550,7 @@ body::before {
     transition: var(--transition);
     border: none;
     cursor: pointer;
+    margin-bottom: 1rem;
 }
 
 .download-btn:hover {
@@ -563,10 +564,69 @@ body::before {
     font-size: 1.3rem;
 }
 
-.download-note {
-    margin-top: 1rem;
+.download-options {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.download-option {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.05);
     color: var(--text-secondary);
+    text-decoration: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--border-radius-sm);
+    font-size: 0.95rem;
+    font-weight: 500;
+    border: 1px solid var(--card-border);
+    transition: var(--transition);
+    opacity: 0.7;
+}
+
+.download-option:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
+    text-decoration: none;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 212, 255, 0.2);
+}
+
+.download-option.active {
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    color: white;
+    border-color: var(--accent-primary);
+    opacity: 1;
+    box-shadow: 0 4px 12px rgba(0, 212, 255, 0.3);
+}
+
+.download-option i {
     font-size: 1rem;
+}
+
+.download-note {
+    margin-top: 0;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+/* Responsive download options */
+@media (max-width: 600px) {
+    .download-options {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .download-option {
+        width: 200px;
+        justify-content: center;
+    }
 }
 
 /* macOS Steps */

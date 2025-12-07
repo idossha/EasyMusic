@@ -81,11 +81,25 @@
             <!-- Quick Start -->
             <section class="section">
                 <div class="download-section">
-                    <a href="https://github.com/idohaber/EasyMusic/releases" class="download-btn" target="_blank">
+                    <a href="https://github.com/idohaber/EasyMusic/releases" class="download-btn download-btn-main" target="_blank" id="mainDownloadBtn">
                         <i class="fas fa-download"></i>
-                        Download EasyMusic
+                        <span id="downloadText">Download EasyMusic</span>
                     </a>
-                    <p class="download-note">Latest version available for Windows, macOS, and Linux</p>
+                    <div class="download-options">
+                        <a href="https://github.com/idohaber/EasyMusic/releases" class="download-option" data-os="windows" target="_blank">
+                            <i class="fab fa-windows"></i>
+                            Windows
+                        </a>
+                        <a href="https://github.com/idohaber/EasyMusic/releases" class="download-option" data-os="macos" target="_blank">
+                            <i class="fab fa-apple"></i>
+                            macOS
+                        </a>
+                        <a href="https://github.com/idohaber/EasyMusic/releases" class="download-option" data-os="linux" target="_blank">
+                            <i class="fab fa-linux"></i>
+                            Linux
+                        </a>
+                    </div>
+                    <p class="download-note">Download links automatically detect your operating system</p>
                 </div>
             </section>
 
