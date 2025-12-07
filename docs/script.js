@@ -10,6 +10,8 @@ document.addEventListener('DOMContentLoaded', function() {
             return 'macos';
         } else if (userAgent.includes('linux') || platform.includes('linux')) {
             return 'linux';
+        } else if (userAgent.includes('win') || platform.includes('win')) {
+            return 'windows';
         } else {
             return 'unknown';
         }
@@ -34,7 +36,8 @@ document.addEventListener('DOMContentLoaded', function() {
         // Define patterns for different OS artefacts
         const patterns = {
             macos: /\.dmg$/i,
-            linux: /\.(?:AppImage|deb)$/i
+            linux: /\.(?:AppImage|deb)$/i,
+            windows: /\.exe$/i
         };
 
         const pattern = patterns[os];
@@ -60,6 +63,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 break;
             case 'linux':
                 osName = 'Download for Linux';
+                break;
+            case 'windows':
+                osName = 'Download for Windows';
                 break;
             default:
                 osName = 'Download EasyMusic';
@@ -96,7 +102,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             } else {
                 // Fallback to releases page if API fails
-                mainDownloadBtn.href = 'https://github.com/idohaber/EasyMusic/releases/latest';
+                mainDownloadBtn.href = 'https://github.com/idossha/EasyMusic/releases/latest';
                 mainDownloadBtn.target = '_blank';
                 console.warn('Failed to fetch release data, falling back to releases page');
             }
